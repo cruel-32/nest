@@ -1,13 +1,15 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { AppController } from './app.controller';
+import { LoggerMiddleware } from '@/middleware/logger.middleware';
+
+import { AppController } from '@/app.controller';
 import { AppService } from '@/app.service';
 import { PuduModule } from '@/pudu/pudu.module';
 import { AuthModule } from '@/auth/auth.module';
 import { UsersModule } from '@/users/users.module';
 
-import { RolesGuard } from './roles.guard';
+import { RolesGuard } from '@/roles.guard';
 
 @Module({
   imports: [TypeOrmModule.forRoot(), PuduModule, UsersModule, AuthModule],
@@ -20,4 +22,8 @@ import { RolesGuard } from './roles.guard';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware);
+  }
+}
