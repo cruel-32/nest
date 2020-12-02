@@ -1,0 +1,13 @@
+{
+    "type" : "mariadb",
+    "host" : "127.0.0.1",
+    "port" : 3399,
+    "username" : "root",
+    "password" : "1212",
+    "database" : "robot",
+    "entities" : [
+        "src/entities/*.entity{.ts}"
+    ],
+    "logging": true,
+    "synchronize" : false
+}
