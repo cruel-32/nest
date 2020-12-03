@@ -11,6 +11,7 @@ import { AppService } from '@/app.service';
 import { PuduModule } from '@/modules/pudu/pudu.module';
 import { AuthModule } from '@/modules/auth/auth.module';
 import { UsersModule } from '@/modules/users/users.module';
+import { ScheduleModule } from './modules/schedule/schedule.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { UsersModule } from '@/modules/users/users.module';
     PuduModule,
     UsersModule,
     AuthModule,
+    ScheduleModule,
   ],
   controllers: [AppController],
   providers: [
