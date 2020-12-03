@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 
 export type User = {
   id: number;
-  uuid: string;
   name: string;
   email: string;
   password: string;
@@ -15,10 +14,9 @@ export class UsersService {
   private readonly users: User[] = [
     {
       id: 1,
-      uuid: 'abcdefg',
-      name: 'name',
+      name: 'name1',
       email: 'acdc1318@gmail.com',
-      password: 'changme',
+      password: 'changeme',
       created_at: Date.now(),
       updated_at: Date.now(),
     },

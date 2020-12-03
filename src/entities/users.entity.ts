@@ -13,14 +13,14 @@ export class User {
   })
   id: number;
 
-  @Column({ length: 40 })
-  uuid: string;
-
   @Column({ length: 20 })
   name: string;
 
   @Column({ length: 100 })
   email: string;
+
+  @Column({ length: 20 })
+  role: string;
 
   @CreateDateColumn({
     name: 'created_at',
