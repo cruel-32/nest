@@ -12,7 +12,7 @@ export class AuthController {
   @Public()
   @Post('login')
   async login(@Request() req) {
-    console.log('controller : ', req.user);
+    // console.log('controller : ', req.user);
     return this.authService.login(req.user);
   }
 }

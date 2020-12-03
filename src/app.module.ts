@@ -2,6 +2,7 @@ import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
 
+import { DevTypeOrmConfig, ProdTypeOrmConfig } from '@/config';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { LoggerMiddleware } from '@/middleware/logger.middleware';
 
@@ -13,17 +14,11 @@ import { UsersModule } from '@/modules/users/users.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'mariadb',
-      host: '127.0.0.1',
-      port: 3399,
-      username: 'root',
-      password: '1212',
-      database: 'robot',
-      entities: ['src/entities/*.entity{.ts}'],
-      logging: true,
-      synchronize: false,
-    }),
+    TypeOrmModule.forRoot(
+      process.env.NODE_ENV === 'production'
+        ? ProdTypeOrmConfig
+        : DevTypeOrmConfig,
+    ),
     PuduModule,
     UsersModule,
     AuthModule,

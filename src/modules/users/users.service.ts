@@ -1,28 +1,31 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
-export type User = {
-  id: number;
-  name: string;
-  email: string;
-  password: string;
-  created_at: number;
-  updated_at: number;
-};
+import { User } from './entities/users.entity';
 
 @Injectable()
 export class UsersService {
-  private readonly users: User[] = [
-    {
-      id: 1,
-      name: 'name1',
-      email: 'acdc1318@gmail.com',
-      password: 'changeme',
-      created_at: Date.now(),
-      updated_at: Date.now(),
-    },
-  ];
+  constructor(
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+  ) {}
 
-  async findOne(username: string): Promise<User | undefined> {
-    return this.users.find((user) => user.name === username);
+  // private readonly users: User[] = [
+  //   {
+  //     id: 1,
+  //     name: 'name1',
+  //     email: 'acdc1318@gmail.com',
+  //     password: '$2b$10$wW9UvdSNOmuC/24A7ExPBegBtVUtFMUZBRk8v9u91Fccc5cI90ZEu',
+  //     role: 'GUEST',
+  //     createdDate: new Date(),
+  //     updatedDate: new Date(),
+  //   },
+  // ];
+
+  findOne(email: string): Promise<User | undefined> {
+    return this.usersRepository.findOne({
+      where: { email },
+    });
   }
 }

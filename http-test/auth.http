@@ -1,0 +1,27 @@
+@endpoint=http://127.0.0.1:3000
+
+### 어드민 로그인하기
+POST {{endpoint}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "username" : "aaa@bbb.com",
+    "password" : "1q2w3e4r"
+}
+
+### 사용자 로그인하기
+POST {{endpoint}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+    "username" : "cruel32@nate.com",
+    "password" : "1q2w3e4r"
+}
+
+### 프로필 가져오기 (토큰없이)
+GET {{endpoint}}/profile HTTP/1.1
+
+
+### 프로필 가져오기
+GET {{endpoint}}/profile HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFjZGMxMzE4QGdtYWlsLmNvbSIsInN1YiI6MSwibmFtZSI6Im5hbWUxIiwiaWF0IjoxNjA2OTc0MzMzLCJleHAiOjE2MDc1NzkxMzN9.wLFek4-sqBBuqDsAsmx5atLQrgpr1hE1mFPpqhOd9X0
