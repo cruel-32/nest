@@ -279,14 +279,12 @@ CREATE TABLE `keenon_robot_model` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `tasks` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` varchar(255) DEFAULT NULL,
-  `taskTime` datetime DEFAULT NULL,
   `progress` varchar(255) DEFAULT NULL,
   `returnEmail` varchar(255) DEFAULT NULL,
   `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`date`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
 

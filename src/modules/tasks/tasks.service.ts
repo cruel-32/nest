@@ -14,53 +14,71 @@ import {
 import { Tasks } from './entities/tasks.entity';
 import { CreateTasksDto } from './dto/create-Tasks.dto';
 import { UpdateTasksDto } from './dto/update-Tasks.dto';
+import { Moment } from 'moment';
 
 @Injectable()
 export class TasksService {
   constructor(
-    private httpService: HttpService,
-    private eventEmitter: EventEmitter2,
     @InjectRepository(Tasks)
     private readonly tasksRepository: Repository<Tasks>,
+    private readonly httpService: HttpService,
+    private readonly eventEmitter: EventEmitter2,
   ) {}
 
   private readonly logger = new Logger(TasksService.name);
 
-  // @Cron('0 * * * * *')
-  // @Interval(1000)
-  checkTask() {
-    this.logger.debug(':::: Check task ::::');
-    this.eventEmitter.emit('task.findOne', 1);
+  getYesterdayStr(): Moment {
+    return new mmt().subtract(1, 'day').format('YYYY-MM-DD');
   }
 
-  // @Interval(5000)
-  // handleInterval() {
-  //   this.logger.debug('5초에 한번씩');
-  //   this.eventEmitter.emit('task.findOne', 1);
-  // }
-  findLastest(param: any) {
-    return this.tasksRepository.findOne({
-      where: {},
-    });
+  // @Interval(3000)
+  @Cron('* 0 * * * *')
+  async createTodayTask() {
+    this.logger.debug(':::: Create Today Task ::::');
+    const date = this.getYesterdayStr();
+    const isExist = await this.tasksRepository
+      .findOne({
+        where: {
+          date,
+        },
+      })
+      .then((item) => !!item?.date);
+
+    if (!isExist) {
+      this.eventEmitter.emit('tasks.createToday', {
+        date,
+      });
+    }
   }
 
-  async create(createTasksDto: CreateTasksDto) {
-    console.log('createTasksDto : ');
+  @Interval(1000 * 10)
+  async runTodayTask() {
+    this.logger.debug(':::: Create Today Task ::::');
+    const date = this.getYesterdayStr();
+    const isExist = await this.tasksRepository
+      .findOne({
+        where: {
+          date,
+          progress: 'waiting',
+        },
+      })
+      .then((item) => !!item?.date);
+
+    if (isExist) {
+      this.eventEmitter.emit('tasks.updateToday', date, {
+        progress: 'running',
+      });
+    }
+  }
+
+  @OnEvent('tasks.createToday')
+  create(createTasksDto: CreateTasksDto) {
     return this.tasksRepository.insert(createTasksDto);
   }
 
-  findAll() {
-    return `This action returns all Tasks`;
-  }
-
-  @OnEvent('task.findOne')
-  findOne(id: number) {
-    this.logger.debug(`This action returns a #${id} Tasks`);
-    return `This action returns a #${id} Tasks`;
-  }
-
+  @OnEvent('tasks.updateToday')
   update(id: number, updateTasksDto: UpdateTasksDto) {
-    return `This action updates a #${id} Tasks`;
+    return this.tasksRepository.update(id, updateTasksDto);
   }
 
   remove(id: number) {

@@ -8,9 +8,7 @@ import {
 
 @Entity({ name: 'tasks' })
 export class Tasks {
-  @PrimaryGeneratedColumn() id: number;
-  @Column() date: string;
-  @Column() taskTime: Date;
+  @PrimaryGeneratedColumn() date: string;
   @Column() progress: string;
   @Column() returnEmail: string;
   @CreateDateColumn() createdAt: Date;
