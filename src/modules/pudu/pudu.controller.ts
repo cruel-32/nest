@@ -1,5 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-import { PuduService } from '@/modules/pudu/pudu.service';
+import { PuduService } from './pudu.service';
 
 @Controller('pudu')
 export class PuduController {

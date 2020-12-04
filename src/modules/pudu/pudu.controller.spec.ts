@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { PuduController } from '@/pudu.controller';
+import { PuduController } from './pudu.controller';
 
 describe('PuduController', () => {
   let controller: PuduController;

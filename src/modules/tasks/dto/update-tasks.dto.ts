@@ -1,10 +1,10 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { CreateScheduleDto } from './create-schedule.dto';
+import { CreateTasksDto } from './create-Tasks.dto';
 
-export class UpdateScheduleDto extends PartialType(CreateScheduleDto) {
+export class UpdateTasksDto extends PartialType(CreateTasksDto) {
   date: string;
   endDate: string;
-  scheduleTime: Date;
+  TasksTime: Date;
   progress: 'waiting' | 'running' | 'canceled' | 'completed' | 'failed';
   returnEmail: string;
 }

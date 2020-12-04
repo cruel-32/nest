@@ -1,8 +1,8 @@
 @endpoint=http://127.0.0.1:3000
 
 ### delivery 가져오기
-GET {{endpoint}}/pudu/delivery HTTP/1.1
+GET {{endpoint}}/api/pudu/delivery HTTP/1.1
 
 
 ### delivery 가져오기
-GET {{endpoint}}/pudu/delivery?page=1&limit=2 HTTP/1.1
+GET {{endpoint}}/api/pudu/delivery?page=1&limit=2 HTTP/1.1

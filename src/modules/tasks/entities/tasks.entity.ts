@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'schedule' })
-export class Schedule {
+@Entity({ name: 'Tasks' })
+export class Tasks {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -18,7 +18,7 @@ export class Schedule {
   endDate: string;
 
   @Column()
-  scheduleTime: Date;
+  TasksTime: Date;
 
   @Column()
   progress: string;
