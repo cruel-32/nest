@@ -20,3 +20,9 @@ const compare = async () => {
 test();
 
 compare();
+
+console.log('new Date() ::: ', new Date());
+console.log(
+  'new Date().toLocaleTimeString() ::: ',
+  new Date().toLocaleTimeString(),
+);

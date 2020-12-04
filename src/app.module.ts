@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { join } from 'path';
 
 import { TypeOrmConfig } from './config';
@@ -18,6 +19,7 @@ import { TasksModule } from './modules/tasks/Tasks.module';
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot(TypeOrmConfig),
     ScheduleModule.forRoot(),
     ServeStaticModule.forRoot({
