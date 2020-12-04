@@ -278,15 +278,14 @@ CREATE TABLE `keenon_robot_model` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-CREATE TABLE `schedule` (
+CREATE TABLE `tasks` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date` varchar(255) DEFAULT NULL,
-  `endDate` varchar(255) DEFAULT NULL,
-  `scheduleTime` datetime DEFAULT NULL,
+  `taskTime` datetime DEFAULT NULL,
   `progress` varchar(255) DEFAULT NULL,
   `returnEmail` varchar(255) DEFAULT NULL,
-  `createdAt` datetime NOT NULL,
-  `updatedAt` datetime NOT NULL,
+  `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4;
 
@@ -297,7 +296,7 @@ CREATE TABLE `users` (
   `email` varchar(100) NOT NULL COLLATE 'utf8mb4_unicode_520_ci',
   `password` varchar(80) NOT NULL COLLATE 'utf8mb4_unicode_520_ci',
   `role` varchar(20) COLLATE 'utf8mb4_unicode_520_ci',
-  `createdAt` datetime NOT NULL,
-  `updatedAt` datetime NOT NULL,
+  `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;

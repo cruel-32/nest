@@ -17,10 +17,11 @@ import { UpdateTasksDto } from './dto/update-tasks.dto';
 export class TasksController {
   constructor(private readonly TasksService: TasksService) {}
 
-  // @Post()
-  // create(@Body() createTasksDto: CreateTasksDto) {
-  //   return this.TasksService.create(createTasksDto);
-  // }
+  @Public()
+  @Post()
+  create(@Body() createTasksDto: CreateTasksDto) {
+    return this.TasksService.create(createTasksDto);
+  }
 
   @Public()
   @Get()

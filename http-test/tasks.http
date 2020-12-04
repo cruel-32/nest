@@ -1,0 +1,15 @@
+@endpoint=http://127.0.0.1:3000
+
+### task 불러오기
+GET {{endpoint}}/api/tasks HTTP/1.1
+
+
+### task 생성
+POST {{endpoint}}/api/tasks/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "date" : "2020-12-01",
+    "progress" : "waiting",
+    "returnEmail" : "mz_choeseunghui@woowafriends.com"
+}

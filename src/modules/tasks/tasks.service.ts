@@ -27,7 +27,7 @@ export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
   // @Cron('0 * * * * *')
-  @Interval(1000)
+  // @Interval(1000)
   checkTask() {
     this.logger.debug(':::: Check task ::::');
     this.eventEmitter.emit('task.findOne', 1);
@@ -44,8 +44,8 @@ export class TasksService {
     });
   }
 
-  create(createTasksDto: CreateTasksDto) {
-    return 'This action adds a new Tasks';
+  async create(createTasksDto: CreateTasksDto) {
+    return this.tasksRepository.insert(createTasksDto);
   }
 
   findAll() {
