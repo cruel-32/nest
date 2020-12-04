@@ -1,4 +1,4 @@
-import { HttpService, Injectable, Logger, Inject } from '@nestjs/common';
+import { HttpService, Injectable, Logger } from '@nestjs/common';
 import { Cron, Interval } from '@nestjs/schedule';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -53,7 +53,7 @@ export class TasksService {
 
   @Interval(1000 * 10)
   async runTodayTask() {
-    this.logger.debug(':::: Create Today Task ::::');
+    this.logger.debug(':::: Run Today Task ::::');
     const date = this.getYesterdayStr();
     const isExist = await this.tasksRepository
       .findOne({
