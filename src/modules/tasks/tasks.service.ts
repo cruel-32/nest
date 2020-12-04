@@ -45,6 +45,7 @@ export class TasksService {
   }
 
   async create(createTasksDto: CreateTasksDto) {
+    console.log('createTasksDto : ');
     return this.tasksRepository.insert(createTasksDto);
   }
 
