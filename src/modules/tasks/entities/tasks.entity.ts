@@ -6,12 +6,11 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'Tasks' })
+@Entity({ name: 'tasks' })
 export class Tasks {
   @PrimaryGeneratedColumn() id: number;
   @Column() date: string;
-  @Column() endDate: string;
-  @Column() TasksTime: Date;
+  @Column() taskTime: Date;
   @Column() progress: string;
   @Column() returnEmail: string;
   @CreateDateColumn() createdAt: Date;

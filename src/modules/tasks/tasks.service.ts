@@ -27,7 +27,7 @@ export class TasksService {
   private readonly logger = new Logger(TasksService.name);
 
   // @Cron('0 * * * * *')
-  @Interval(1000)
+  // @Interval(1000)
   checkTask() {
     this.logger.debug(':::: Check task ::::');
     this.eventEmitter.emit('task.findOne', 1);
@@ -44,8 +44,12 @@ export class TasksService {
     });
   }
 
-  create(createTasksDto: CreateTasksDto) {
-    return 'This action adds a new Tasks';
+  async create(createTasksDto: CreateTasksDto) {
+    const res = this.tasksRepository.insert(createTasksDto);
+    console.log('createTasksDto res ::::: ', res);
+    console.log('생성완료!!!!!!!');
+
+    return res; //this.tasksRepository.create(createTasksDto);
   }
 
   findAll() {
