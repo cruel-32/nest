@@ -1,1 +1,30 @@
-export class CreateDeliveryDto {}
+export class CreateDeliveryDto {
+  create_time?: string;
+  timestamp?: number;
+  mac?: string;
+  task_id?: number;
+  treaty?: number;
+  log_type?: number;
+  task_type?: number;
+  report_number?: number;
+  softver?: string;
+  hardver?: string;
+  product_code?: string;
+  table_count?: number;
+  tray_count?: number;
+  mileage?: number;
+  average?: number;
+  duration?: number;
+  duration_back?: number;
+  duration_delivery?: number;
+  duration_pause?: number;
+  duration_wait?: number;
+  interrupt?: number;
+  battery_end?: number;
+  task_finish?: number;
+  status?: number;
+  log?: string;
+  robot_id?: number;
+  shop_id?: number;
+  shop_name?: string;
+}
