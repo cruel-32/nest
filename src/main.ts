@@ -5,14 +5,11 @@ import { config } from 'dotenv';
 import * as helmet from 'helmet';
 import * as rateLimit from 'express-rate-limit';
 
-import { WsAdapter } from '@nestjs/platform-ws';
-
 config();
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
   const port = process.env.PORT || 3333;
-  app.useWebSocketAdapter(new WsAdapter(app));
   app.use(
     helmet({
       contentSecurityPolicy: false,

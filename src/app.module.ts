@@ -9,7 +9,6 @@ import { join } from 'path';
 import { TypeOrmConfig } from './config';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { LoggerMiddleware } from './middleware/logger.middleware';
-import { EventsModule } from './events/events.module';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -20,7 +19,6 @@ import { TasksModule } from './modules/tasks/Tasks.module';
 
 @Module({
   imports: [
-    EventsModule,
     EventEmitterModule.forRoot(),
     TypeOrmModule.forRoot(TypeOrmConfig),
     ScheduleModule.forRoot(),
