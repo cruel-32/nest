@@ -4,6 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <!-- <script src="https://cdn.socket.io/socket.io-3.0.1.min.js"></script> -->
+    <script src="/socket.io.js"></script>
+    <script>
+        const socket = io('http://localhost:3000');
+        socket.on('connect',  () => {
+            socket.emit('requestState', {
+                message: 'test',
+                state: 1,
+            })
+        });
+        socket.on('responsetState', (data) => {
+            console.log("🚀 ~ file: index.html ~ line 15 ~ socket.on ~ data", data)
+        })
+    </script>
 </head>
 <body>
     <h1>Nest.js 정적파일</h1>

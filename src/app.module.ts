@@ -16,6 +16,8 @@ import { PuduModule } from './modules/pudu/pudu.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { TasksModule } from './modules/tasks/Tasks.module';
+import { CrawlerModule } from './modules/crawler/crawler.module';
+import { MessageModule } from './modules/message/message.module';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { TasksModule } from './modules/tasks/Tasks.module';
     UsersModule,
     AuthModule,
     TasksModule,
+    CrawlerModule,
+    MessageModule,
   ],
   controllers: [AppController],
   providers: [

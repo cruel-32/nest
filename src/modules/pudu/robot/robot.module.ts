@@ -4,6 +4,6 @@ import { RobotController } from './robot.controller';
 
 @Module({
   controllers: [RobotController],
-  providers: [RobotService]
+  providers: [RobotService],
 })
 export class RobotModule {}

@@ -1,6 +1,6 @@
-import { HttpService, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron, Interval } from '@nestjs/schedule';
-import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import {
@@ -13,25 +13,27 @@ import { mmt } from '@/moment';
 import { Tasks } from './entities/tasks.entity';
 import { CreateTasksDto } from './dto/create-Tasks.dto';
 import { UpdateTasksDto } from './dto/update-Tasks.dto';
-import { Moment } from 'moment';
+import { MessageGateway } from '../message/message.gateway';
+import { CrawlerService } from '../crawler/crawler.service';
 
 @Injectable()
 export class TasksService {
   constructor(
     @InjectRepository(Tasks)
     private readonly tasksRepository: Repository<Tasks>,
-    private readonly httpService: HttpService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly messageGateway: MessageGateway,
+    private readonly crawlerService: CrawlerService,
   ) {}
 
   private readonly logger = new Logger(TasksService.name);
 
-  getYesterdayStr(): Moment {
+  getYesterdayStr(): string {
     return new mmt().subtract(1, 'day').format('YYYY-MM-DD');
   }
 
-  // @Interval(3000)
-  @Cron('* 0 * * * *')
+  @Interval(1000 * 10)
+  // @Cron('* 0 * * * *')
   async createTodayTask() {
     this.logger.debug(':::: Create Today Task ::::');
     const date = this.getYesterdayStr();
@@ -44,43 +46,50 @@ export class TasksService {
       .then((item) => !!item?.date);
 
     if (!isExist) {
-      this.eventEmitter.emit('tasks.createToday', {
+      this.create({
         date,
+        progress: 'waiting',
+        returnEmail: 'mz_choeseunghui@woowafriends.com',
       });
     }
   }
 
   @Interval(1000 * 10)
   async runTodayTask() {
-    this.logger.debug(':::: Run Today Task ::::');
-    const date = this.getYesterdayStr();
-    const isExist = await this.tasksRepository
-      .findOne({
-        where: {
-          date,
-          progress: 'waiting',
-        },
-      })
-      .then((item) => !!item?.date);
+    console.log(
+      'this.messageGateway.taskingId : ',
+      this.messageGateway.taskingId,
+    );
+    if (!this.messageGateway.taskingId) {
+      this.logger.debug(':::: Run Today Task ::::');
+      const date = this.getYesterdayStr();
+      const isExist = await this.tasksRepository
+        .findOne({
+          where: {
+            date,
+            progress: 'waiting',
+          },
+        })
+        .then((item) => !!item?.date);
 
-    if (isExist) {
-      this.eventEmitter.emit('tasks.updateToday', date, {
-        progress: 'running',
-      });
+      if (isExist) {
+        this.messageGateway.taskingId = date;
+        // this.update(date, { progress: 'running' });
+        this.crawlerService.crawlingPudu(date);
+      }
     }
   }
 
-  @OnEvent('tasks.createToday')
   create(createTasksDto: CreateTasksDto) {
+    console.log('create : ', createTasksDto);
     return this.tasksRepository.insert(createTasksDto);
   }
 
-  @OnEvent('tasks.updateToday')
-  update(id: number, updateTasksDto: UpdateTasksDto) {
+  update(id: string, updateTasksDto: UpdateTasksDto) {
     return this.tasksRepository.update(id, updateTasksDto);
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} Tasks`;
   }
 
