@@ -127,7 +127,7 @@ export class CrawlerService {
           ...this.helper.puduGetDeliveriesParam,
           offset,
           robot_id,
-          timestampList: this.timestampList,
+          timestamp: this.timestampList,
         },
         {
           headers: {
@@ -137,7 +137,7 @@ export class CrawlerService {
       )
       .toPromise()
       .then((res) => {
-        console.log('res : ', res.data.count);
+        console.log('res : ', res.data);
         return res;
       });
   }
