@@ -9,19 +9,14 @@ import { Socket } from 'socket.io';
 export class MessageGateway {
   @WebSocketServer() server;
   taskingId = null;
+  taskingTime = null;
 
   @SubscribeMessage('requestState')
   emitState(client: Socket, message) {
     console.log('req.message', message);
-    client.emit('responsetState', this.taskingId);
-  }
-
-  setState(taskingId) {
-    console.log('req.taskingId', taskingId);
-    this.taskingId = taskingId;
-  }
-  getState() {
-    console.log('req.taskingId');
-    return this.taskingId;
+    client.emit('responsetState', {
+      taskingId: this.taskingId,
+      taskingTime: this.taskingTime,
+    });
   }
 }

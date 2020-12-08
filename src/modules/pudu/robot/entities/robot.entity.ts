@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -8,22 +8,28 @@ import {
 
 @Entity({ name: 'pudu_robot' })
 export class Robot {
-  @PrimaryGeneratedColumn() id: number;
-  @Column() mac: string;
-  @Column() shop_id: number;
-  @Column() pid: string;
-  @Column() name: string;
-  @Column() use_scene: number;
-  @Column() product_code: string;
-  @Column() use_type: number;
-  @Column() group_id: string;
-  @Column() use_end_time: string;
-  @Column() softver: string;
-  @Column() hardver: string;
-  @Column() frozen_time: string;
-  @Column() run_status_time: string;
-  @Column() shop_name: string;
-  @Column() group_name: string;
-  @CreateDateColumn() createdAt: Date;
-  @UpdateDateColumn() updatedAt: Date;
+  @PrimaryColumn() id: number;
+  @Column({ nullable: true }) mac: string;
+  @Column({ nullable: true }) shop_id: number;
+  @Column({ nullable: true }) pid: string;
+  @Column({ nullable: true }) name: string;
+  @Column({ nullable: true }) use_scene: number;
+  @Column({ nullable: true }) product_code: string;
+  @Column({ nullable: true }) use_type: number;
+  @Column({ nullable: true }) group_id: string;
+  @Column({ nullable: true }) use_end_time: string;
+  @Column({ nullable: true }) softver: string;
+  @Column({ nullable: true }) hardver: string;
+  @Column({ nullable: true }) frozen_time: string;
+  @Column({ nullable: true }) run_status_time: string;
+  @Column({ nullable: true }) shop_name: string;
+  @Column({ nullable: true }) group_name: string;
+  @CreateDateColumn({
+    precision: null,
+  })
+  createdAt: Date;
+  @UpdateDateColumn({
+    precision: null,
+  })
+  updatedAt: Date;
 }

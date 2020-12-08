@@ -1,4 +1,5 @@
 export class CreateDeliveryLogDto {
+  id: number;
   average?: number;
   battery?: number;
   mileage?: number;

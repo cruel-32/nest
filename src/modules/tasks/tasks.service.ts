@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Cron, Interval } from '@nestjs/schedule';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Interval } from '@nestjs/schedule';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThanOrEqual } from 'typeorm';
 import {
   paginate,
   Pagination,
@@ -28,29 +28,32 @@ export class TasksService {
 
   private readonly logger = new Logger(TasksService.name);
 
-  getYesterdayStr(): string {
-    return new mmt().subtract(1, 'day').format('YYYY-MM-DD');
+  getSubtractDate(day: number): string {
+    return new mmt().subtract(day, 'day').format('YYYY-MM-DD');
   }
 
   @Interval(1000 * 10)
   // @Cron('* 0 * * * *')
   async createTodayTask() {
     this.logger.debug(':::: Create Today Task ::::');
-    const date = this.getYesterdayStr();
-    const isExist = await this.tasksRepository
-      .findOne({
-        where: {
-          date,
-        },
-      })
-      .then((item) => !!item?.date);
+    console.log(':::: Create Today Task ::::', this.messageGateway.taskingId);
+    if (!this.messageGateway.taskingId) {
+      const date = this.getSubtractDate(3); //매일 하루전 3일전 스케쥴을 등록
+      const isExist = await this.tasksRepository
+        .findOne({
+          where: {
+            date,
+          },
+        })
+        .then((item) => !!item?.date);
 
-    if (!isExist) {
-      this.create({
-        date,
-        progress: 'waiting',
-        returnEmail: 'mz_choeseunghui@woowafriends.com',
-      });
+      if (!isExist) {
+        this.create({
+          date,
+          progress: 'waiting',
+          returnEmail: 'mz_choeseunghui@woowafriends.com',
+        });
+      }
     }
   }
 
@@ -61,21 +64,26 @@ export class TasksService {
       this.messageGateway.taskingId,
     );
     if (!this.messageGateway.taskingId) {
-      this.logger.debug(':::: Run Today Task ::::');
-      const date = this.getYesterdayStr();
-      const isExist = await this.tasksRepository
-        .findOne({
-          where: {
-            date,
-            progress: 'waiting',
-          },
-        })
-        .then((item) => !!item?.date);
+      const date = this.getSubtractDate(3);
+      console.log('date : ', date);
+      const task = await this.tasksRepository.findOne({
+        where: {
+          progress: 'waiting',
+          date: LessThanOrEqual(date),
+        },
+        order: {
+          date: 'ASC',
+        },
+      });
 
-      if (isExist) {
-        this.messageGateway.taskingId = date;
+      console.log('task :::::: ', task);
+
+      if (task) {
+        this.logger.debug(':::: Run Today Task ::::');
+        this.messageGateway.taskingId = task.date;
+        this.messageGateway.taskingTime = mmt();
         // this.update(date, { progress: 'running' });
-        this.crawlerService.crawlingPudu(date);
+        this.crawlerService.crawlingPudu(task.date);
       }
     }
   }
@@ -85,6 +93,7 @@ export class TasksService {
     return this.tasksRepository.insert(createTasksDto);
   }
 
+  @OnEvent('tasks.update')
   update(id: string, updateTasksDto: UpdateTasksDto) {
     return this.tasksRepository.update(id, updateTasksDto);
   }

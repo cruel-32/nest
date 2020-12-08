@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -8,20 +8,20 @@ import {
 
 @Entity({ name: 'pudu_delivery_log' })
 export class DeliveryLog {
-  @PrimaryGeneratedColumn() id: number;
-  @Column() average: number;
-  @Column() battery: number;
-  @Column() mileage: number;
-  @Column() task_id: number;
-  @Column() theme: string;
-  @Column() total_time: number;
-  @Column() hardver: string;
-  @Column() mac: string;
-  @Column() report_number: number;
-  @Column() robot: number;
-  @Column() softver: string;
-  @Column() timestamp: number;
-  @Column() type: string;
+  @PrimaryColumn() id: number;
+  @Column({ nullable: true }) average: number;
+  @Column({ nullable: true }) battery: number;
+  @Column({ nullable: true }) mileage: number;
+  @Column({ nullable: true }) task_id: number;
+  @Column({ nullable: true }) theme: string;
+  @Column({ nullable: true }) total_time: number;
+  @Column({ nullable: true }) hardver: string;
+  @Column({ nullable: true }) mac: string;
+  @Column({ nullable: true }) report_number: number;
+  @Column({ nullable: true }) robot: number;
+  @Column({ nullable: true }) softver: string;
+  @Column({ nullable: true }) timestamp: number;
+  @Column({ nullable: true }) type: string;
   @CreateDateColumn() createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;
 }

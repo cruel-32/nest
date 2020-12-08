@@ -32,7 +32,8 @@ export class DeliveryService {
   }
 
   create(createDeliveryDto: CreateDeliveryDto) {
-    return 'This action adds a new delivery';
+    console.log('createDeliveryDto ::::: ', createDeliveryDto);
+    return this.deliveryRepository.insert(createDeliveryDto);
   }
 
   findOne(id: number) {

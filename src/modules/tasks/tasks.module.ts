@@ -1,11 +1,11 @@
 import { Module, HttpModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
+import { MessageModule } from '@/modules/message/message.module';
 import { TasksService } from './Tasks.service';
 import { TasksController } from './Tasks.controller';
 import { Tasks } from './entities/tasks.entity';
-import { MessageModule } from '@/modules/message/message.module';
-import { CrawlerService } from '../crawler/crawler.service';
+import { CrawlerModule } from '../crawler/crawler.module';
 
 @Module({
   imports: [
@@ -14,9 +14,10 @@ import { CrawlerService } from '../crawler/crawler.service';
       timeout: 1000 * 60 * 10,
       maxRedirects: 5,
     }),
+    CrawlerModule,
     MessageModule,
   ],
   controllers: [TasksController],
-  providers: [TasksService, CrawlerService],
+  providers: [TasksService],
 })
 export class TasksModule {}

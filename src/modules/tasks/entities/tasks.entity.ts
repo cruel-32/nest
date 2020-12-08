@@ -1,6 +1,6 @@
 import {
   Entity,
-  PrimaryGeneratedColumn,
+  PrimaryColumn,
   Column,
   CreateDateColumn,
   UpdateDateColumn,
@@ -8,9 +8,15 @@ import {
 
 @Entity({ name: 'tasks' })
 export class Tasks {
-  @PrimaryGeneratedColumn() date: string;
+  @PrimaryColumn() date: string;
   @Column() progress: string;
   @Column() returnEmail: string;
-  @CreateDateColumn() createdAt: Date;
-  @UpdateDateColumn() updatedAt: Date;
+  @CreateDateColumn({
+    precision: null,
+  })
+  createdAt: Date;
+  @UpdateDateColumn({
+    precision: null,
+  })
+  updatedAt: Date;
 }

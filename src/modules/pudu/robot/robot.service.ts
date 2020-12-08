@@ -1,11 +1,23 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { Repository, Transaction, TransactionRepository } from 'typeorm';
+
+import { Robot } from './entities/robot.entity';
 import { CreateRobotDto } from './dto/create-robot.dto';
 import { UpdateRobotDto } from './dto/update-robot.dto';
 
 @Injectable()
 export class RobotService {
+  constructor(
+    @InjectRepository(Robot)
+    private readonly robotRepository: Repository<Robot>,
+    private readonly eventEmitter: EventEmitter2,
+  ) {}
+
   create(createRobotDto: CreateRobotDto) {
-    return 'This action adds a new robot';
+    console.log('createRobotDto : ', createRobotDto);
+    return this.robotRepository.insert(createRobotDto);
   }
 
   findAll() {

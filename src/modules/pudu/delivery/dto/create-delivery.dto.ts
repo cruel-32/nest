@@ -1,4 +1,5 @@
 export class CreateDeliveryDto {
+  id: number;
   create_time?: string;
   timestamp?: number;
   mac?: string;

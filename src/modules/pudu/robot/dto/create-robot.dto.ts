@@ -1,4 +1,5 @@
 export class CreateRobotDto {
+  id: number;
   mac?: string;
   shop_id?: number;
   pid?: string;
