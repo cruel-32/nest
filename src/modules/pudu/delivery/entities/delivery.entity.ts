@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'pudu_delivery2' })
+@Entity({ name: 'pudu_delivery' })
 export class Delivery {
   @PrimaryColumn() id: number;
   @Column({ nullable: true }) create_time: string;
