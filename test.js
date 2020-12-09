@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const moment = require('moment');
 
 const test = async () => {
   const salt = await bcrypt.genSalt();
@@ -26,3 +27,16 @@ console.log(
   'new Date().toLocaleTimeString() ::: ',
   new Date().toLocaleString(),
 );
+
+const psTimestamp = (YYYYMMDD, isStart) => {
+  const timeStamp = moment(YYYYMMDD).toDate();
+
+  timeStamp.setHours(isStart ? 0 : 23);
+  timeStamp.setMinutes(isStart ? 0 : 59);
+  timeStamp.setSeconds(isStart ? 0 : 59);
+
+  return parseInt(timeStamp.getTime().toString().substring(0, 10));
+};
+
+console.log('psTimestamp ::::: ', psTimestamp('2020-11-30', true));
+console.log('psTimestamp ::::: ', psTimestamp('2020-11-30'));

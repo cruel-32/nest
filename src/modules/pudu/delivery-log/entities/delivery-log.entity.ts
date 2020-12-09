@@ -9,10 +9,10 @@ import {
 @Entity({ name: 'pudu_delivery_log' })
 export class DeliveryLog {
   @PrimaryColumn() id: number;
-  @Column({ nullable: true }) average: number;
+  @Column({ nullable: true, type: 'double' }) average: number;
   @Column({ nullable: true }) battery: number;
-  @Column({ nullable: true }) mileage: number;
-  @Column({ nullable: true }) task_id: number;
+  @Column({ nullable: true, type: 'double' }) mileage: number;
+  @Column({ nullable: true, type: 'bigint' }) task_id: number;
   @Column({ nullable: true }) theme: string;
   @Column({ nullable: true }) total_time: number;
   @Column({ nullable: true }) hardver: string;
@@ -20,7 +20,7 @@ export class DeliveryLog {
   @Column({ nullable: true }) report_number: number;
   @Column({ nullable: true }) robot: number;
   @Column({ nullable: true }) softver: string;
-  @Column({ nullable: true }) timestamp: number;
+  @Column({ nullable: true, type: 'bigint' }) timestamp: number;
   @Column({ nullable: true }) type: string;
   @CreateDateColumn() createdAt: Date;
   @UpdateDateColumn() updatedAt: Date;

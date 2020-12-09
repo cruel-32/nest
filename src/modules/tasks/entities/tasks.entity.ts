@@ -11,6 +11,8 @@ export class Tasks {
   @PrimaryColumn() date: string;
   @Column() progress: string;
   @Column() returnEmail: string;
+  @Column() runningTime: number;
+  @Column({ type: 'text' }) message: string;
   @CreateDateColumn({
     precision: null,
   })

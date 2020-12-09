@@ -10,9 +10,9 @@ import {
 export class Delivery {
   @PrimaryColumn() id: number;
   @Column({ nullable: true }) create_time: string;
-  @Column({ nullable: true }) timestamp: number;
+  @Column({ nullable: true, type: 'bigint' }) timestamp: number;
   @Column({ nullable: true }) mac: string;
-  @Column({ nullable: true }) task_id: number;
+  @Column({ nullable: true, type: 'bigint' }) task_id: number;
   @Column({ nullable: true }) treaty: number;
   @Column({ nullable: true }) log_type: number;
   @Column({ nullable: true }) task_type: number;
@@ -22,8 +22,8 @@ export class Delivery {
   @Column({ nullable: true }) product_code: string;
   @Column({ nullable: true }) table_count: number;
   @Column({ nullable: true }) tray_count: number;
-  @Column({ nullable: true }) mileage: number;
-  @Column({ nullable: true }) average: number;
+  @Column({ nullable: true, type: 'double' }) mileage: number;
+  @Column({ nullable: true, type: 'double' }) average: number;
   @Column({ nullable: true }) duration: number;
   @Column({ nullable: true }) duration_back: number;
   @Column({ nullable: true }) duration_delivery: number;

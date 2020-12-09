@@ -43,6 +43,8 @@ export class CrawlingHelper {
     timeStamp.setMinutes(isStart ? 0 : 59);
     timeStamp.setSeconds(isStart ? 0 : 59);
 
+    console.log('timeStamp : ', timeStamp);
+
     return parseInt(timeStamp.getTime().toString().substring(0, 10));
   }
 }

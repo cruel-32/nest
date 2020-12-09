@@ -1,14 +1,16 @@
 import { HttpService, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Connection } from 'typeorm';
+import delay from 'delay';
+import { Moment } from 'moment';
 
+import { mmt } from '@/moment';
 import { newArray } from '@/helper/Common';
 import { CrawlingHelper } from '@/helper/CrawlingHelper';
-import { Robot } from '@/modules/pudu/robot/entities/robot.entity';
-import { DeliveryLog } from '@/modules/pudu/delivery-log/entities/delivery-log.entity';
+import { MessageGateway } from '../message/message.gateway';
 
-import { RobotService } from '@/modules/pudu/robot/robot.service';
-import { DeliveryService } from '@/modules/pudu/delivery/delivery.service';
+import { Delivery } from '@/modules/pudu/delivery/entities/delivery.entity';
+import { Robot } from '@/modules/pudu/robot/entities/robot.entity';
 
 type PuduLoginResult = {
   code?: number;
@@ -19,10 +21,10 @@ type PuduLoginResult = {
   };
 };
 
-type PuduGetListResults = {
+type PuduGetListResults<T> = {
   code: number;
   count: number;
-  data: Robot[];
+  data: T[];
 };
 
 @Injectable()
@@ -31,6 +33,7 @@ export class CrawlerService {
     private readonly eventEmitter: EventEmitter2,
     private readonly httpService: HttpService,
     private readonly connection: Connection,
+    private readonly messageGateway: MessageGateway,
   ) {}
   private readonly logger = new Logger(CrawlerService.name);
   private readonly helper = new CrawlingHelper();
@@ -50,33 +53,43 @@ export class CrawlerService {
     if (this.puduToken) {
       try {
         this.timestampList = [
-          this.helper.psTimestamp(YYYY_MM_DD, true),
           this.helper.psTimestamp(YYYY_MM_DD),
+          this.helper.psTimestamp(YYYY_MM_DD, false),
         ];
+        console.log('this.timestampList : ', this.timestampList);
+        const robots = await this.getPuduRobotsAllPage();
+        const deliveries = await this.getPuduDeliveriesAllPageByRobotIds(
+          robots.map((robot) => robot.id),
+        );
+        const { logs, details } = deliveries.reduce(
+          (obj, item) => {
+            const { id } = item;
+            const deliveryLog = JSON.parse(item.log);
+            if (deliveryLog) {
+              obj.logs.push({ ...deliveryLog, id });
+              if (deliveryLog.info && Array.isArray(deliveryLog.info)) {
+                obj.details.push(
+                  ...deliveryLog.info.map((info) => ({
+                    ...info,
+                    deliveryId: id,
+                  })),
+                );
+              }
+            }
+            return obj;
+          },
+          {
+            logs: [],
+            details: [],
+          },
+        );
 
-        const robots = [
-          {
-            id: 99999,
-            mac: 'test1',
-          },
-          {
-            id: 99998,
-            mac: 'test2',
-          },
-        ]; //await this.getPuduRobotsAllPage();
-        const deliveries = [
-          {
-            id: 99999999,
-            log:
-              '{"average":0.6223509379214276,"battery":33,"info":[{"average":0.6223509379214276,"duration":19,"duration_pause":0,"duration_wait":0,"goal_id":"","mileage":9.649551292471735,"order_id":34707722,"status":true,"task_type":3,"theme":"","tray_list":[]}],"mileage":9.649551292471735,"task_id":1607167086,"total_time":19,"hardver":"20.7.14","mac":"C0:84:7D:18:B9:A6","report_number":6626,"softver":"4.11.0.49","timestamp":1607167105,"type":"delivery"}',
-            robot_id: 9999,
-          },
-        ];
-        // await this.getPuduDeliveriesAllPageByRobotIds(
-        //   robots.map((robot) => robot.id),
-        // );
+        console.log('robot length ::::: ', robots.length);
+        console.log('delivery length ::::: ', deliveries.length);
+        console.log('log length ::::: ', logs.length);
+        console.log('detail length ::::: ', details.length);
 
-        const result = await this.connection.transaction(async (manager) => {
+        await this.connection.transaction(async (manager) => {
           const RobotRepository = manager.getRepository('pudu_robot');
           const DeliveryRepository = manager.getRepository('pudu_delivery');
           const DeliveryLogRepository = manager.getRepository(
@@ -87,50 +100,39 @@ export class CrawlerService {
           );
 
           //robot 입력
+          await Promise.all(robots.map((robot) => RobotRepository.save(robot)));
           await Promise.all(
-            robots.map((robot) => RobotRepository.insert(robot)),
+            deliveries.map((delivery) => DeliveryRepository.insert(delivery)),
           );
-
-          //delivery 입력 -> deliveryLog 입력 -> deliveryDetail 입력
-          //insert를 flat시켜서 모두 Promise.all에 태움
           await Promise.all(
-            deliveries
-              .map((delivery) => {
-                const { id } = delivery;
-                const queries = [DeliveryRepository.insert(delivery)];
-                const deliveryLog = JSON.parse(delivery.log);
-                console.log('deliveryLog ::::: ', deliveryLog);
-                // if (deliveryLog) {
-                //   queries.push(
-                //     DeliveryLogRepository.insert({ id, ...deliveryLog }),
-                //   );
-                //   const { info } = deliveryLog;
-                //   console.log('info ::::: ', deliveryLog);
-                //   if (Array.isArray(info)) {
-                //     queries.push(
-                //       ...info.map((item) =>
-                //         DeliveryDetailRepository.insert({
-                //           ...item,
-                //           deliveryId: id,
-                //         }),
-                //       ),
-                //     );
-                //   }
-                // }
-                return queries;
-              })
-              .flat(),
+            logs.map((log) => DeliveryLogRepository.insert(log)),
+          );
+          await Promise.all(
+            details.map((detail) => DeliveryDetailRepository.insert(detail)),
           );
         });
-        console.log('tranactions result ::::: ', result);
+
+        const endTime: Moment = mmt();
+        endTime.diff(this.messageGateway.taskingTime, 'seconds');
+
         this.eventEmitter.emit('tasks.update', YYYY_MM_DD, {
           progress: 'completed',
+          message: '크롤링 성공',
+          runningTime: endTime.diff(this.messageGateway.taskingTime, 'seconds'),
         });
       } catch (error) {
         console.log('error:::::', error);
+        const endTime = mmt();
+        endTime.diff(this.messageGateway.taskingTime, 'seconds');
+
         this.eventEmitter.emit('tasks.update', YYYY_MM_DD, {
           progress: 'failed',
+          message: error.message,
+          runningTime: endTime.diff(this.messageGateway.taskingTime, 'seconds'),
         });
+      } finally {
+        this.messageGateway.taskingId = null;
+        this.messageGateway.taskingTime = null;
       }
     }
   }
@@ -166,13 +168,17 @@ export class CrawlerService {
   }
 
   async getPuduRobots(offset = 0) {
+    const param = { ...this.helper.puduGetRobotsParam, offset };
+    // console.log('param ::::: ', param);
+
     return await this.httpService
-      .post<PuduGetListResults>(
+      .post<PuduGetListResults<Robot>>(
         'https://cs.pudutech.com/api/robot/bind_shop/page_list',
-        { ...this.helper.puduGetRobotsParam, offset },
+        param,
         {
           headers: {
             authorization: this.puduToken,
+            'Content-Type': 'application/json;charset=UTF-8',
           },
         },
       )
@@ -180,9 +186,20 @@ export class CrawlerService {
   }
 
   async getPuduDeliveriesAllPageByRobotIds(robot_ids = []) {
-    return await Promise.all(
-      robot_ids.map((robot_id) => this.getPuduDeliveriesAllPage(robot_id)),
-    ).then((results) => results.flat());
+    //한번에 불러오지 않고 delay
+    const results = [];
+    for (let i = 0, len = robot_ids.length; i < len; i++) {
+      console.log(`::::: delivery of ${robot_ids[i]} robot :::::`);
+      const result = await this.getPuduDeliveriesAllPage(robot_ids[i]);
+      // console.log('all page result ::: ', result);
+      results.push(...result);
+    }
+    return results;
+
+    //한번에 불러오기
+    // return await Promise.all(
+    //   robot_ids.map((robot_id) => this.getPuduDeliveriesAllPage(robot_id)),
+    // ).then((results) => results.flat());
   }
 
   async getPuduDeliveriesAllPage(robot_id) {
@@ -190,12 +207,27 @@ export class CrawlerService {
     const { count, data: list } = data;
     const { limit } = this.helper.puduGetDeliveriesParam;
     const totalPage = Math.floor(count / limit); //2
-    const remaining = await Promise.all(
-      newArray(totalPage).map((n, i) =>
-        this.getPuduDeliveries(limit * (i + 1), robot_id),
-      ),
-    ).then((results) => results.map((res) => res.data.data).flat());
-    list.push(...remaining);
+    if (list[0]?.id) {
+      console.log('delivery id : ', list[0]?.id);
+    }
+
+    //한번에 불러오지 않고 delay
+    for (let i = 0, len = totalPage; i < len; i++) {
+      // console.log(`::::: ${robot_id} robot delivery page number ${i}:::::`);
+      const result = await this.getPuduDeliveries(limit * (i + 1), robot_id);
+      console.log(
+        `::::: delivery of ${robot_id} robot 추가페이지 ${i + 1} :::::`,
+      );
+      list.push(...result.data.data);
+    }
+
+    //한번에 불러오기
+    // const remaining = await Promise.all(
+    //   newArray(totalPage).map((n, i) =>
+    //     this.getPuduDeliveries(limit * (i + 1), robot_id),
+    //   ),
+    // ).then((results) => results.map((res) => res.data.data).flat());
+    // list.push(...remaining);
     return list;
   }
 
@@ -207,21 +239,18 @@ export class CrawlerService {
       timestamp: this.timestampList,
     };
 
-    console.log('param ::::: ', param);
+    // console.log('param ::::: ', param);
     return await this.httpService
-      .post<PuduGetListResults>(
+      .post<PuduGetListResults<Delivery>>(
         'https://cs.pudutech.com/api/report/delivery/list',
         param,
         {
           headers: {
             authorization: this.puduToken,
+            'Content-Type': 'application/json;charset=UTF-8',
           },
         },
       )
-      .toPromise()
-      .then((res) => {
-        console.log('res : ', res.data);
-        return res;
-      });
+      .toPromise();
   }
 }

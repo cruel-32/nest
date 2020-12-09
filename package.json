@@ -37,6 +37,7 @@
     "class": "^0.1.4",
     "class-transformer": "^0.3.1",
     "class-validator": "^0.12.2",
+    "delay": "^4.4.0",
     "dotenv": "^8.2.0",
     "express-rate-limit": "^5.2.3",
     "helmet": "^4.2.0",

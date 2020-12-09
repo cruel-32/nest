@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Interval } from '@nestjs/schedule';
+import { Cron, Interval } from '@nestjs/schedule';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThanOrEqual } from 'typeorm';
@@ -32,11 +32,10 @@ export class TasksService {
     return new mmt().subtract(day, 'day').format('YYYY-MM-DD');
   }
 
-  @Interval(1000 * 10)
-  // @Cron('* 0 * * * *')
+  // @Interval(1000 * 10)
+  @Cron('* 0 * * * *')
   async createTodayTask() {
     this.logger.debug(':::: Create Today Task ::::');
-    console.log(':::: Create Today Task ::::', this.messageGateway.taskingId);
     if (!this.messageGateway.taskingId) {
       const date = this.getSubtractDate(3); //매일 하루전 3일전 스케쥴을 등록
       const isExist = await this.tasksRepository
@@ -58,11 +57,8 @@ export class TasksService {
   }
 
   @Interval(1000 * 10)
+  // @Cron('* * 6 * * *')
   async runTodayTask() {
-    console.log(
-      'this.messageGateway.taskingId : ',
-      this.messageGateway.taskingId,
-    );
     if (!this.messageGateway.taskingId) {
       const date = this.getSubtractDate(3);
       console.log('date : ', date);

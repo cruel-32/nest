@@ -1,0 +1,56 @@
+@endpoint=https://cs.pudutech.com
+
+### pudu delivery 불러오기
+POST {{endpoint}}/api/report/delivery/list
+authorization:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50Ijoid29vd2EiLCJyb2xlX2dyb3VwIjoiYWdlbnRfc3VwcG9ydCIsImlhdCI6MTYwNzMyOTU2NiwiZXhwIjoxNjA3NTg4NzY2fQ.Ok2gTYSeN4X9eMPoBFayfRHYcR1h36yBjEO1EI19tlw
+content-type: application/json;charset=UTF-8
+
+{
+    "limit": 50,
+    "offset": 0,
+    "order": "DESC",
+    "robot_id": 5584,
+    "sort": "",
+    "status": 1,
+    "task_finish": 1,
+    "timestamp": [
+        1606662000,
+        1606748399
+    ]
+}
+
+{
+    "limit": 50,
+    "offset": 0,
+    "order": "DESC",
+    "robot_id": 5584,
+    "sort": "",
+    "status": 1,
+    "task_finish": 1,
+    "timestamp": [
+        1606662000,
+        1606662000
+    ]
+}
+
+
+# url: 'https://cs.pudutech.com/api/report/delivery/list',
+# method: 'post',
+# data: '{"limit":50,"offset":0,"order":"DESC","sort":"","status":1,"task_finish":1,"robot_id":{"id":6475,"mac":"D4:12:43:8A:88:F8","shop_id":2882,"pid":"PD1040204676010","name":"pd2_2","use_scene":400,"product_code":315,"use_type":1,"group_id":"fS1x6BI4TKYBkXkY_0_2882","use_end_time":null,"softver":"4.12.0.24","hardver":"20.8.3","frozen_time":null,"run_status_time":"2020-12-02T05:00:37.000Z","shop_name":"Temporary Register","group_name":"默认组"},"timestamp":[1606662000,1606662000]}',
+# headers: {
+# Accept: 'application/json, text/plain, */*',
+# 'Content-Type': 'application/json;charset=UTF-8',
+# authorization: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY2NvdW50Ijoid29vd2EiLCJyb2xlX2dyb3VwIjoiYWdlbnRfc3VwcG9ydCIsImlhdCI6MTYwNzQ4ODM1NiwiZXhwIjoxNjA3NzQ3NTU2fQ.qMygW1zHkScsjZ79d0AjWhi0wL3mibqGto8q7Iug_VA',
+# 'User-Agent': 'axios/0.21.0',
+# 'Content-Length': 482
+# },
+# transformRequest: [ [Function: transformRequest] ],
+# transformResponse: [ [Function: transformResponse] ],
+# timeout: 600000,
+# adapter: [Function: httpAdapter],
+# xsrfCookieName: 'XSRF-TOKEN',
+# xsrfHeaderName: 'X-XSRF-TOKEN',
+# maxContentLength: -1,
+# maxBodyLength: -1,
+# maxRedirects: 5,
+# validateStatus: [Function: validateStatus]
