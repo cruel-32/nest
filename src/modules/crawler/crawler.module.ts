@@ -6,7 +6,7 @@ import { CrawlerService } from './crawler.service';
 @Module({
   imports: [
     HttpModule.register({
-      timeout: 1000 * 60 * 20, //10분
+      timeout: 1000 * 60 * 60, //60분
       maxRedirects: 5,
     }),
     MessageModule,

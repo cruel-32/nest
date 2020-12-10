@@ -11,7 +11,7 @@ import { CrawlerModule } from '../crawler/crawler.module';
   imports: [
     TypeOrmModule.forFeature([Tasks]),
     HttpModule.register({
-      timeout: 1000 * 60 * 10,
+      timeout: 1000 * 60 * 60,
       maxRedirects: 5,
     }),
     CrawlerModule,

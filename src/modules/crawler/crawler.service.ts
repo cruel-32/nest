@@ -192,6 +192,7 @@ export class CrawlerService {
       console.log(`::::: delivery of ${robot_ids[i]} robot :::::`);
       const result = await this.getPuduDeliveriesAllPage(robot_ids[i]);
       // console.log('all page result ::: ', result);
+      // delay(1000 * 20);
       results.push(...result);
     }
     return results;
@@ -218,6 +219,7 @@ export class CrawlerService {
       console.log(
         `::::: delivery of ${robot_id} robot 추가페이지 ${i + 1} :::::`,
       );
+      delay(1000 * 20);
       list.push(...result.data.data);
     }
 
