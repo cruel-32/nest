@@ -33,7 +33,7 @@ export class Delivery {
   @Column({ nullable: true }) battery_end: number;
   @Column({ nullable: true }) task_finish: number;
   @Column({ nullable: true }) status: number;
-  @Column({ nullable: true }) log: string;
+  @Column({ nullable: true, type: 'text' }) log: string;
   @Column({ nullable: true }) shop_id: number;
   @Column({ nullable: true }) shop_name: string;
   @Column() robot_id: number;

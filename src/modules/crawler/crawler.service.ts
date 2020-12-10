@@ -3,6 +3,8 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Connection } from 'typeorm';
 import delay from 'delay';
 import { Moment } from 'moment';
+import { catchError, retry, mergeMap } from 'rxjs/operators';
+import { Observable, throwError, of } from 'rxjs';
 
 import { mmt } from '@/moment';
 import { newArray } from '@/helper/Common';
@@ -63,6 +65,11 @@ export class CrawlerService {
         );
         const { logs, details } = deliveries.reduce(
           (obj, item) => {
+            if (!item) {
+              console.log('item : ', item);
+              console.log('deliveries : ', deliveries);
+              return obj;
+            }
             const { id } = item;
             const deliveryLog = JSON.parse(item.log);
             if (deliveryLog) {
@@ -134,6 +141,15 @@ export class CrawlerService {
         this.messageGateway.taskingId = null;
         this.messageGateway.taskingTime = null;
       }
+    } else {
+      const endTime: Moment = mmt();
+      this.eventEmitter.emit('tasks.update', YYYY_MM_DD, {
+        progress: 'failed',
+        message: 'Login Failed',
+        runningTime: endTime.diff(this.messageGateway.taskingTime, 'seconds'),
+      });
+      this.messageGateway.taskingId = null;
+      this.messageGateway.taskingTime = null;
     }
   }
 
@@ -143,13 +159,26 @@ export class CrawlerService {
         'https://cs.pudutech.com/api/login',
         this.helper.puduLoginParam,
       )
+      .pipe(
+        mergeMap((res) => {
+          this.logger.debug(`:::: Login Result ::::`);
+          console.log(res.status);
+          if (res.status >= 400) {
+            return throwError(`${res.status} returned from http call`);
+          }
+          return of(res);
+        }),
+        retry(10),
+        catchError((err) => {
+          return of(err);
+        }),
+      )
       .toPromise();
+    // .catch(() => {});
 
     if (status === 200) {
-      const {
-        data: { token },
-      } = data;
-      this.puduToken = token;
+      const { data: tokenData } = data;
+      this.puduToken = tokenData?.token;
     }
   }
 
@@ -180,6 +209,19 @@ export class CrawlerService {
           },
         },
       )
+      .pipe(
+        mergeMap((res) => {
+          console.log('PuduGetListResults res.status : ', res.status);
+          if (res.status >= 400) {
+            return throwError(`${res.status} returned from http call`);
+          }
+          return of(res);
+        }),
+        retry(10),
+        catchError((err) => {
+          return of(err);
+        }),
+      )
       .toPromise();
   }
 
@@ -190,7 +232,6 @@ export class CrawlerService {
       console.log(`::::: delivery of ${robot_ids[i]} robot :::::`);
       const result = await this.getPuduDeliveriesAllPage(robot_ids[i]);
       // console.log('all page result ::: ', result);
-      await delay(1000 * 20);
       results.push(...result);
     }
     return results;
@@ -203,13 +244,10 @@ export class CrawlerService {
 
   async getPuduDeliveriesAllPage(robot_id) {
     const { data } = await this.getPuduDeliveries(0, robot_id);
-    const { count, data: list } = data;
+    const { count, data: list = [] } = data;
     const { limit } = this.helper.puduGetDeliveriesParam;
     const totalPage = Math.floor(count / limit); //2
-    if (list[0]?.id) {
-      console.log('delivery id : ', list[0]?.id);
-    }
-
+    console.log('delivery id : ', list?.[0]?.id);
     //한번에 불러오지 않고 delay
     for (let i = 0, len = totalPage; i < len; i++) {
       // console.log(`::::: ${robot_id} robot delivery page number ${i}:::::`);
@@ -217,7 +255,6 @@ export class CrawlerService {
       console.log(
         `::::: delivery of ${robot_id} robot 추가페이지 ${i + 1} :::::`,
       );
-      await delay(1000 * 20);
       list.push(...result.data.data);
     }
 
@@ -228,6 +265,7 @@ export class CrawlerService {
     //   ),
     // ).then((results) => results.map((res) => res.data.data).flat());
     // list.push(...remaining);
+
     return list;
   }
 
@@ -250,6 +288,23 @@ export class CrawlerService {
             'Content-Type': 'application/json;charset=UTF-8',
           },
         },
+      )
+      .pipe(
+        mergeMap((res) => {
+          console.log('PuduGetListResults res.status : ', res.status);
+          if (!res.data) {
+            console.log('PuduGetListResults res.data ::: ', res.data.count);
+          }
+          if (res.status >= 400) {
+            return throwError(`${res.status} returned from http call`);
+          }
+          return of(res);
+        }),
+        retry(10),
+        catchError((err) => {
+          console.log('PuduGetListResults err ::: ', err);
+          return of(err);
+        }),
       )
       .toPromise();
   }

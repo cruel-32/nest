@@ -51,6 +51,7 @@ export class TasksService {
           date,
           progress: 'waiting',
           returnEmail: 'mz_choeseunghui@woowafriends.com',
+          runningTime: 0,
         });
       }
     }

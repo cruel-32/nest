@@ -17,7 +17,7 @@ export class DeliveryDetail {
   @Column({ nullable: true }) duration_wait: number;
   @Column({ nullable: true }) goal_id: string;
   @Column({ nullable: true, type: 'double' }) mileage: string;
-  @Column({ nullable: true }) order_id: number;
+  @Column({ nullable: true, type: 'bigint' }) order_id: number;
   @Column({ nullable: true, type: 'tinyint' }) status: number;
   @Column({ nullable: true }) task_type: number;
   @CreateDateColumn() createdAt: string;
