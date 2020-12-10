@@ -1,4 +1,4 @@
-@endpoint=http://127.0.0.1:3000
+@endpoint=http://127.0.0.1:8080
 
 ### 어드민 로그인하기
 POST {{endpoint}}/api/auth/login HTTP/1.1
