@@ -32,8 +32,8 @@ export class TasksService {
     return new mmt().subtract(day, 'day').format('YYYY-MM-DD');
   }
 
-  // @Interval(1000 * 10)
-  @Cron('* 0 * * * *')
+  @Interval(1000 * 60 * 60 * 2)
+  // @Cron('* 0 * * * *')
   async createTodayTask() {
     this.logger.debug(':::: Create Today Task ::::');
     if (!this.messageGateway.taskingId) {

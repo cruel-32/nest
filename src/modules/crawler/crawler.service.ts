@@ -248,6 +248,11 @@ export class CrawlerService {
     const { limit } = this.helper.puduGetDeliveriesParam;
     const totalPage = Math.floor(count / limit); //2
     console.log('delivery id : ', list?.[0]?.id);
+
+    if (!list?.[0]?.id) {
+      console.log('delivery data ::::: ', data);
+    }
+
     //한번에 불러오지 않고 delay
     for (let i = 0, len = totalPage; i < len; i++) {
       // console.log(`::::: ${robot_id} robot delivery page number ${i}:::::`);
