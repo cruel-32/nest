@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, Interval } from '@nestjs/schedule';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThanOrEqual } from 'typeorm';
+import { Repository, LessThanOrEqual, In } from 'typeorm';
 import {
   paginate,
   Pagination,
@@ -65,7 +65,7 @@ export class TasksService {
       console.log('date : ', date);
       const task = await this.tasksRepository.findOne({
         where: {
-          progress: 'waiting',
+          progress: In(['waiting', 'failed']),
           date: LessThanOrEqual(date),
         },
         order: {
@@ -77,9 +77,6 @@ export class TasksService {
 
       if (task) {
         this.logger.debug(':::: Run Today Task ::::');
-        this.messageGateway.taskingId = task.date;
-        this.messageGateway.taskingTime = mmt();
-        // this.update(date, { progress: 'running' });
         this.crawlerService.crawlingPudu(task.date);
       }
     }

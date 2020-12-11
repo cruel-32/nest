@@ -6,7 +6,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'pudu_delivery' })
+@Entity({ name: 'pudu_store' })
 export class Store {
   @PrimaryColumn() id: number;
   @Column({ nullable: true }) create_time: string;
@@ -15,7 +15,7 @@ export class Store {
   @Column({ nullable: true }) name: string;
   @Column({ nullable: true }) operation_status: number;
   @Column({ nullable: true, type: 'tinyint' }) robot_count: number;
-  @Column({ nullable: true, type: 'text' }) robot_use_type: string;
+  @Column({ nullable: true, type: 'simple-array' }) robot_use_type: string;
   @Column({ nullable: true }) shop_type: string;
   @Column({ nullable: true }) sn: string;
   @Column({ nullable: true }) sys_sn: string;

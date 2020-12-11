@@ -18,9 +18,11 @@ export class StoreService {
     private readonly storeRepository: Repository<Store>,
   ) {}
 
-  async paginate(options: IPaginationOptions): Promise<Pagination<Store>> {
+  async paginate(
+    options: IPaginationOptions & OrderBy,
+  ): Promise<Pagination<Store>> {
     const queryBuilder = this.storeRepository.createQueryBuilder('c');
-    queryBuilder.orderBy('c.name', 'DESC'); // Or whatever you need to do
+    queryBuilder.orderBy(`c.${options.orderBy}`, options.dir); // Or whatever you need to do
 
     return paginate<Store>(this.storeRepository, options);
   }
@@ -28,10 +30,6 @@ export class StoreService {
   create(createStoreDto: CreateStoreDto) {
     console.log('createStoreDto ::::: ', createStoreDto);
     return this.storeRepository.insert(createStoreDto);
-  }
-
-  findAll() {
-    return `This action returns all store`;
   }
 
   findOne(id: number) {

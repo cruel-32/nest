@@ -5,6 +5,24 @@ export class CrawlingHelper {
     account: process.env.PUDU_ID,
     password: process.env.PUDU_PW,
   };
+  puduGetStoresParam = {
+    field: [
+      'sn',
+      'sys_sn',
+      'operation_status',
+      'grade',
+      'shop_type',
+      'cuisine',
+      'robot_count',
+      'robot_use_type',
+      'grade',
+    ],
+    limit: 50,
+    offset: 0,
+    order: 'DESC',
+    sort: 'grade',
+    status: 1,
+  };
   puduGetRobotsParam = {
     field: [
       'shop_id',

@@ -31,6 +31,10 @@ export class DeliveryService {
     return paginate<Delivery>(this.deliveryRepository, options);
   }
 
+  findAll() {
+    return this.deliveryRepository.find();
+  }
+
   create(createDeliveryDto: CreateDeliveryDto) {
     console.log('createDeliveryDto ::::: ', createDeliveryDto);
     return this.deliveryRepository.insert(createDeliveryDto);

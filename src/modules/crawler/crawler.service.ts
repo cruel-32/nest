@@ -13,6 +13,7 @@ import { MessageGateway } from '../message/message.gateway';
 
 import { Delivery } from '@/modules/pudu/delivery/entities/delivery.entity';
 import { Robot } from '@/modules/pudu/robot/entities/robot.entity';
+import { Store } from '@/modules/pudu/store/entities/store.entity';
 
 type PuduLoginResult = {
   code?: number;
@@ -50,106 +51,103 @@ export class CrawlerService {
     // this.eventEmitter.emit('tasks.createToday', {
     //   date,
     // });
-    await this.loginPudu();
+    this.messageGateway.taskingId = YYYY_MM_DD;
+    this.messageGateway.taskingTime = mmt();
+    this.messageGateway.interval = setInterval(() => {
+      this.messageGateway.emitStateFromServer();
+    }, 1000);
+    try {
+      this.timestampList = [
+        this.helper.psTimestamp(YYYY_MM_DD),
+        this.helper.psTimestamp(YYYY_MM_DD, false),
+      ];
+      console.log('this.timestampList : ', this.timestampList);
+      await this.loginPudu();
+      const stores = await this.getPuduStoresAllPage();
+      // const robots = await this.getPuduRobotsAllPage();
+      // const deliveries = await this.getPuduDeliveriesAllPageByRobotIds(
+      //   robots.map((robot) => robot.id),
+      // );
+      // const { logs, details } = deliveries.reduce(
+      //   (obj, item) => {
+      //     if (!item) {
+      //       console.log('item : ', item);
+      //       console.log('deliveries : ', deliveries);
+      //       return obj;
+      //     }
+      //     const { id } = item;
+      //     const deliveryLog = JSON.parse(item.log);
+      //     if (deliveryLog) {
+      //       obj.logs.push({ ...deliveryLog, id });
+      //       if (deliveryLog.info && Array.isArray(deliveryLog.info)) {
+      //         obj.details.push(
+      //           ...deliveryLog.info.map((info) => ({
+      //             ...info,
+      //             deliveryId: id,
+      //           })),
+      //         );
+      //       }
+      //     }
+      //     return obj;
+      //   },
+      //   {
+      //     logs: [],
+      //     details: [],
+      //   },
+      // );
 
-    if (this.puduToken) {
-      try {
-        this.timestampList = [
-          this.helper.psTimestamp(YYYY_MM_DD),
-          this.helper.psTimestamp(YYYY_MM_DD, false),
-        ];
-        console.log('this.timestampList : ', this.timestampList);
-        const robots = await this.getPuduRobotsAllPage();
-        const deliveries = await this.getPuduDeliveriesAllPageByRobotIds(
-          robots.map((robot) => robot.id),
-        );
-        const { logs, details } = deliveries.reduce(
-          (obj, item) => {
-            if (!item) {
-              console.log('item : ', item);
-              console.log('deliveries : ', deliveries);
-              return obj;
-            }
-            const { id } = item;
-            const deliveryLog = JSON.parse(item.log);
-            if (deliveryLog) {
-              obj.logs.push({ ...deliveryLog, id });
-              if (deliveryLog.info && Array.isArray(deliveryLog.info)) {
-                obj.details.push(
-                  ...deliveryLog.info.map((info) => ({
-                    ...info,
-                    deliveryId: id,
-                  })),
-                );
-              }
-            }
-            return obj;
-          },
-          {
-            logs: [],
-            details: [],
-          },
-        );
+      // console.log('store length ::::: ', stores.length);
+      // console.log('robot length ::::: ', robots.length);
+      // console.log('delivery length ::::: ', deliveries.length);
+      // console.log('log length ::::: ', logs.length);
+      // console.log('detail length ::::: ', details.length);
 
-        console.log('robot length ::::: ', robots.length);
-        console.log('delivery length ::::: ', deliveries.length);
-        console.log('log length ::::: ', logs.length);
-        console.log('detail length ::::: ', details.length);
+      await this.connection.transaction(async (manager) => {
+        const StoreRepository = manager.getRepository('pudu_store');
+        // const RobotRepository = manager.getRepository('pudu_robot');
+        // const DeliveryRepository = manager.getRepository('pudu_delivery');
+        // const DeliveryLogRepository = manager.getRepository(
+        //   'pudu_delivery_log',
+        // );
+        // const DeliveryDetailRepository = manager.getRepository(
+        //   'pudu_delivery_detail',
+        // );
 
-        await this.connection.transaction(async (manager) => {
-          const RobotRepository = manager.getRepository('pudu_robot');
-          const DeliveryRepository = manager.getRepository('pudu_delivery');
-          const DeliveryLogRepository = manager.getRepository(
-            'pudu_delivery_log',
-          );
-          const DeliveryDetailRepository = manager.getRepository(
-            'pudu_delivery_detail',
-          );
+        // //database 입력
+        await Promise.all(stores.map((store) => StoreRepository.save(store)));
+        // await Promise.all(robots.map((robot) => RobotRepository.save(robot)));
+        // await Promise.all(
+        //   deliveries.map((delivery) => DeliveryRepository.insert(delivery)),
+        // );
+        // await Promise.all(logs.map((log) => DeliveryLogRepository.insert(log)));
+        // await Promise.all(
+        //   details.map((detail) => DeliveryDetailRepository.insert(detail)),
+        // );
+      });
 
-          //robot 입력
-          await Promise.all(robots.map((robot) => RobotRepository.save(robot)));
-          await Promise.all(
-            deliveries.map((delivery) => DeliveryRepository.insert(delivery)),
-          );
-          await Promise.all(
-            logs.map((log) => DeliveryLogRepository.insert(log)),
-          );
-          await Promise.all(
-            details.map((detail) => DeliveryDetailRepository.insert(detail)),
-          );
-        });
-
-        const endTime: Moment = mmt();
-        endTime.diff(this.messageGateway.taskingTime, 'seconds');
-
-        this.eventEmitter.emit('tasks.update', YYYY_MM_DD, {
-          progress: 'completed',
-          message: '크롤링 성공',
-          runningTime: endTime.diff(this.messageGateway.taskingTime, 'seconds'),
-        });
-      } catch (error) {
-        console.log('error:::::', error);
-        const endTime = mmt();
-        endTime.diff(this.messageGateway.taskingTime, 'seconds');
-
-        this.eventEmitter.emit('tasks.update', YYYY_MM_DD, {
-          progress: 'failed',
-          message: error.message,
-          runningTime: endTime.diff(this.messageGateway.taskingTime, 'seconds'),
-        });
-      } finally {
-        this.messageGateway.taskingId = null;
-        this.messageGateway.taskingTime = null;
-      }
-    } else {
       const endTime: Moment = mmt();
+      endTime.diff(this.messageGateway.taskingTime, 'seconds');
+
       this.eventEmitter.emit('tasks.update', YYYY_MM_DD, {
-        progress: 'failed',
-        message: 'Login Failed',
+        progress: 'completed',
+        message: '크롤링 성공',
         runningTime: endTime.diff(this.messageGateway.taskingTime, 'seconds'),
       });
+    } catch (error) {
+      console.log('error:::::', error);
+      const endTime = mmt();
+      endTime.diff(this.messageGateway.taskingTime, 'seconds');
+
+      this.eventEmitter.emit('tasks.update', YYYY_MM_DD, {
+        progress: 'failed',
+        message: error.message,
+        runningTime: endTime.diff(this.messageGateway.taskingTime, 'seconds'),
+      });
+    } finally {
+      clearInterval(this.messageGateway.interval);
       this.messageGateway.taskingId = null;
       this.messageGateway.taskingTime = null;
+      this.messageGateway.emitStateFromServer();
     }
   }
 
@@ -180,6 +178,52 @@ export class CrawlerService {
       const { data: tokenData } = data;
       this.puduToken = tokenData?.token;
     }
+  }
+
+  async getPuduStoresAllPage() {
+    const { data } = await this.getPuduStores();
+    const { count, data: list } = data;
+    const { limit } = this.helper.puduGetStoresParam;
+    const totalPage = Math.floor(count / limit); //2
+    const remaining = await Promise.all(
+      newArray(totalPage).map((n, i) => this.getPuduStores(limit * (i + 1))),
+    ).then((results) => results.map((res) => res.data.data).flat());
+    list.push(...remaining);
+    return list;
+  }
+
+  async getPuduStores(offset = 0) {
+    const param = { ...this.helper.puduGetStoresParam, offset };
+    // console.log('param ::::: ', param);
+
+    return await this.httpService
+      .post<PuduGetListResults<Store>>(
+        'https://cs.pudutech.com/api/shop/list',
+        param,
+        {
+          headers: {
+            authorization: this.puduToken,
+            'Content-Type': 'application/json;charset=UTF-8',
+          },
+        },
+      )
+      .pipe(
+        mergeMap((res) => {
+          console.log(
+            `limit : ${param.limit}, offset : ${offset}, count: ${res.data.count}, length : ${res.data.data.length}`,
+          );
+          console.log('PuduGetListResults res.status : ', res.status);
+          if (res.status >= 400) {
+            return throwError(`${res.status} returned from http call`);
+          }
+          return of(res);
+        }),
+        retry(10),
+        catchError((err) => {
+          return of(err);
+        }),
+      )
+      .toPromise();
   }
 
   async getPuduRobotsAllPage() {
