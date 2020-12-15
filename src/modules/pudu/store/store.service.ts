@@ -10,6 +10,7 @@ import {
 import { Store } from './entities/store.entity';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { UpdateStoreDto } from './dto/update-store.dto';
+import { parseIntPageMeta } from '@/helper/Common';
 
 @Injectable()
 export class StoreService {
@@ -24,7 +25,9 @@ export class StoreService {
     const queryBuilder = this.storeRepository.createQueryBuilder('c');
     queryBuilder.orderBy(`c.${options.orderBy}`, options.dir); // Or whatever you need to do
 
-    return paginate<Store>(this.storeRepository, options);
+    return parseIntPageMeta(
+      await paginate<Store>(this.storeRepository, options),
+    );
   }
 
   create(createStoreDto: CreateStoreDto) {
