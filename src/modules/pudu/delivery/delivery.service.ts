@@ -11,6 +11,8 @@ import { Delivery } from './entities/delivery.entity';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 
+import { parseIntPageMeta } from '@/helper/Common';
+
 @Injectable()
 export class DeliveryService {
   constructor(
@@ -28,7 +30,7 @@ export class DeliveryService {
     const queryBuilder = this.deliveryRepository.createQueryBuilder('c');
     queryBuilder.orderBy('c.name', 'DESC'); // Or whatever you need to do
 
-    return paginate<Delivery>(this.deliveryRepository, options);
+    return parseIntPageMeta(await paginate<Delivery>(queryBuilder, options));
   }
 
   findAll() {

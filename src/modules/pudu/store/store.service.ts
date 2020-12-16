@@ -25,9 +25,7 @@ export class StoreService {
     const queryBuilder = this.storeRepository.createQueryBuilder('c');
     queryBuilder.orderBy(`c.${options.orderBy}`, options.dir); // Or whatever you need to do
 
-    return parseIntPageMeta(
-      await paginate<Store>(this.storeRepository, options),
-    );
+    return parseIntPageMeta(await paginate<Store>(queryBuilder, options));
   }
 
   create(createStoreDto: CreateStoreDto) {

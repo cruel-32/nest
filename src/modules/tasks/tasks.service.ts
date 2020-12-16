@@ -16,6 +16,8 @@ import { UpdateTasksDto } from './dto/update-Tasks.dto';
 import { MessageGateway } from '../message/message.gateway';
 import { CrawlerService } from '../crawler/crawler.service';
 
+import { parseIntPageMeta } from '@/helper/Common';
+
 @Injectable()
 export class TasksService {
   constructor(
@@ -102,6 +104,6 @@ export class TasksService {
     const queryBuilder = this.tasksRepository.createQueryBuilder('c');
     queryBuilder.orderBy('c.date', 'DESC'); // Or whatever you need to do
 
-    return paginate<Tasks>(this.tasksRepository, options);
+    return parseIntPageMeta(await paginate<Tasks>(queryBuilder, options));
   }
 }
