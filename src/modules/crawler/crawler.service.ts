@@ -8,7 +8,7 @@ import { Observable, throwError, of } from 'rxjs';
 
 import { mmt } from '@/moment';
 import { newArray } from '@/helper/Common';
-import { CrawlingHelper } from '@/helper/CrawlingHelper';
+import { CrawlingHelper } from '@/helper/PuduCrawlingHelper';
 import { MessageGateway } from '../message/message.gateway';
 
 import { Delivery } from '@/modules/pudu/delivery/entities/delivery.entity';
@@ -43,7 +43,7 @@ export class CrawlerService {
 
   puduToken: string = null;
   keenonToken: string = null;
-  timestampList: number[] = [];
+  unixTime = 0;
 
   async crawlingPudu(YYYY_MM_DD: string) {
     this.logger.debug(`:::: Create Today ${YYYY_MM_DD} Task ::::`);
@@ -57,72 +57,69 @@ export class CrawlerService {
       this.messageGateway.emitStateFromServer();
     }, 1000);
     try {
-      this.timestampList = [
-        this.helper.psTimestamp(YYYY_MM_DD),
-        this.helper.psTimestamp(YYYY_MM_DD, false),
-      ];
-      console.log('this.timestampList : ', this.timestampList);
+      this.unixTime = this.helper.psTimestamp(YYYY_MM_DD);
+      console.log('this.unixTime : ', this.unixTime);
       await this.loginPudu();
       const stores = await this.getPuduStoresAllPage();
-      // const robots = await this.getPuduRobotsAllPage();
-      // const deliveries = await this.getPuduDeliveriesAllPageByRobotIds(
-      //   robots.map((robot) => robot.id),
-      // );
-      // const { logs, details } = deliveries.reduce(
-      //   (obj, item) => {
-      //     if (!item) {
-      //       console.log('item : ', item);
-      //       console.log('deliveries : ', deliveries);
-      //       return obj;
-      //     }
-      //     const { id } = item;
-      //     const deliveryLog = JSON.parse(item.log);
-      //     if (deliveryLog) {
-      //       obj.logs.push({ ...deliveryLog, id });
-      //       if (deliveryLog.info && Array.isArray(deliveryLog.info)) {
-      //         obj.details.push(
-      //           ...deliveryLog.info.map((info) => ({
-      //             ...info,
-      //             deliveryId: id,
-      //           })),
-      //         );
-      //       }
-      //     }
-      //     return obj;
-      //   },
-      //   {
-      //     logs: [],
-      //     details: [],
-      //   },
-      // );
+      const robots = await this.getPuduRobotsAllPage();
+      const deliveries = await this.getPuduDeliveriesAllPageByRobotIds(
+        robots.map((robot) => robot.id),
+      );
+      const { logs, details } = deliveries.reduce(
+        (obj, item) => {
+          if (!item) {
+            console.log('item : ', item);
+            console.log('deliveries : ', deliveries);
+            return obj;
+          }
+          const { id } = item;
+          const deliveryLog = JSON.parse(item.log);
+          if (deliveryLog) {
+            obj.logs.push({ ...deliveryLog, id });
+            if (deliveryLog.info && Array.isArray(deliveryLog.info)) {
+              obj.details.push(
+                ...deliveryLog.info.map((info) => ({
+                  ...info,
+                  deliveryId: id,
+                })),
+              );
+            }
+          }
+          return obj;
+        },
+        {
+          logs: [],
+          details: [],
+        },
+      );
 
-      // console.log('store length ::::: ', stores.length);
-      // console.log('robot length ::::: ', robots.length);
-      // console.log('delivery length ::::: ', deliveries.length);
-      // console.log('log length ::::: ', logs.length);
-      // console.log('detail length ::::: ', details.length);
+      console.log('store length ::::: ', stores.length);
+      console.log('robot length ::::: ', robots.length);
+      console.log('delivery length ::::: ', deliveries.length);
+      console.log('log length ::::: ', logs.length);
+      console.log('detail length ::::: ', details.length);
 
       await this.connection.transaction(async (manager) => {
         const StoreRepository = manager.getRepository('pudu_store');
-        // const RobotRepository = manager.getRepository('pudu_robot');
-        // const DeliveryRepository = manager.getRepository('pudu_delivery');
-        // const DeliveryLogRepository = manager.getRepository(
-        //   'pudu_delivery_log',
-        // );
-        // const DeliveryDetailRepository = manager.getRepository(
-        //   'pudu_delivery_detail',
-        // );
+        const RobotRepository = manager.getRepository('pudu_robot');
+        const DeliveryRepository = manager.getRepository('pudu_delivery');
+        const DeliveryLogRepository = manager.getRepository(
+          'pudu_delivery_log',
+        );
+        const DeliveryDetailRepository = manager.getRepository(
+          'pudu_delivery_detail',
+        );
 
         // //database 입력
         await Promise.all(stores.map((store) => StoreRepository.save(store)));
-        // await Promise.all(robots.map((robot) => RobotRepository.save(robot)));
-        // await Promise.all(
-        //   deliveries.map((delivery) => DeliveryRepository.insert(delivery)),
-        // );
-        // await Promise.all(logs.map((log) => DeliveryLogRepository.insert(log)));
-        // await Promise.all(
-        //   details.map((detail) => DeliveryDetailRepository.insert(detail)),
-        // );
+        await Promise.all(robots.map((robot) => RobotRepository.save(robot)));
+        await Promise.all(
+          deliveries.map((delivery) => DeliveryRepository.insert(delivery)),
+        );
+        await Promise.all(logs.map((log) => DeliveryLogRepository.insert(log)));
+        await Promise.all(
+          details.map((detail) => DeliveryDetailRepository.insert(detail)),
+        );
       });
 
       const endTime: Moment = mmt();
@@ -182,6 +179,7 @@ export class CrawlerService {
 
   async getPuduStoresAllPage() {
     const { data } = await this.getPuduStores();
+    console.log('CrawlerService ~ getPuduStoresAllPage ~ data', data);
     const { count, data: list } = data;
     const { limit } = this.helper.puduGetStoresParam;
     const totalPage = Math.floor(count / limit); //2
@@ -287,22 +285,19 @@ export class CrawlerService {
   }
 
   async getPuduDeliveriesAllPage(robot_id) {
-    const { data } = await this.getPuduDeliveries(0, robot_id);
-    const { count, data: list = [] } = data;
+    const {
+      data: { count },
+    } = await this.getPuduDeliveriesCount(0, robot_id);
     const { limit } = this.helper.puduGetDeliveriesParam;
-    const totalPage = Math.floor(count / limit); //2
-    console.log('delivery id : ', list?.[0]?.id);
-
-    if (!list?.[0]?.id) {
-      console.log('delivery data ::::: ', data);
-    }
+    const totalPage = Math.ceil(count / limit); //2
+    const list = [];
 
     //한번에 불러오지 않고 delay
     for (let i = 0, len = totalPage; i < len; i++) {
       // console.log(`::::: ${robot_id} robot delivery page number ${i}:::::`);
-      const result = await this.getPuduDeliveries(limit * (i + 1), robot_id);
+      const result = await this.getPuduDeliveries(limit * i, robot_id);
       console.log(
-        `::::: delivery of ${robot_id} robot 추가페이지 ${i + 1} :::::`,
+        `::::: delivery of ${robot_id} robot 페이지넘버 ${i + 1} :::::`,
       );
       list.push(...result.data.data);
     }
@@ -318,12 +313,53 @@ export class CrawlerService {
     return list;
   }
 
+  async getPuduDeliveriesCount(offset = 0, robot_id) {
+    const param = {
+      ...this.helper.puduGetDeliveriesParam,
+      is_get_count: true,
+      offset,
+      robot_id,
+      unix_time: this.unixTime,
+    };
+
+    // console.log('param ::::: ', param);
+    return await this.httpService
+      .post<PuduGetListResults<Delivery>>(
+        'https://cs.pudutech.com/api/report/delivery/list',
+        param,
+        {
+          headers: {
+            authorization: this.puduToken,
+            'Content-Type': 'application/json;charset=UTF-8',
+          },
+        },
+      )
+      .pipe(
+        mergeMap((res) => {
+          console.log('PuduGetListResults res.status : ', res.status);
+          if (!res.data) {
+            console.log('PuduGetListResults res.data ::: ', res.data.count);
+          }
+          if (res.status >= 400) {
+            return throwError(`${res.status} returned from http call`);
+          }
+          return of(res);
+        }),
+        retry(10),
+        catchError((err) => {
+          console.log('PuduGetListResults err ::: ', err);
+          return of(err);
+        }),
+      )
+      .toPromise();
+  }
+
   async getPuduDeliveries(offset = 0, robot_id) {
     const param = {
       ...this.helper.puduGetDeliveriesParam,
       offset,
       robot_id,
-      timestamp: this.timestampList,
+      unix_time: this.unixTime,
     };
 
     // console.log('param ::::: ', param);

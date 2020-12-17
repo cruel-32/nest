@@ -44,14 +44,13 @@ export class CrawlingHelper {
     sort: 'id',
   };
   puduGetDeliveriesParam = {
+    is_get_count: false,
+    is_show_all_field: true,
     limit: 50,
     offset: 0,
-    order: 'DESC',
-    sort: '',
-    status: 1,
-    task_finish: 1,
-    robot_id: null,
-    timestamp: [],
+    robot_id: 3818,
+    time_type: 'day',
+    unix_time: 1606748400,
   };
 
   psTimestamp(YYYYMMDD: string, isStart = true): number {
