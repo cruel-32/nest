@@ -36,7 +36,7 @@ export class Delivery {
   @Column({ nullable: true, type: 'text' }) log: string;
   @Column({ nullable: true }) shop_id: number;
   @Column({ nullable: true }) shop_name: string;
-  @Column() robot_id: number;
+  @Column({ nullable: true }) robot_id: number;
   @CreateDateColumn({
     precision: null,
   })

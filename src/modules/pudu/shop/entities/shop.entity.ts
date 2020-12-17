@@ -14,7 +14,7 @@ export class Shop {
   @Column({ nullable: true }) grade: string;
   @Column({ nullable: true }) name: string;
   @Column({ nullable: true }) operation_status: number;
-  @Column({ nullable: true, type: 'tinyint' }) robot_count: number;
+  @Column({ nullable: true }) robot_count: number;
   @Column({ nullable: true, type: 'simple-array' }) robot_use_type: string;
   @Column({ nullable: true }) shop_type: string;
   @Column({ nullable: true }) sn: string;
