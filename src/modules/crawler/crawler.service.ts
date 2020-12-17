@@ -13,7 +13,7 @@ import { MessageGateway } from '../message/message.gateway';
 
 import { Delivery } from '@/modules/pudu/delivery/entities/delivery.entity';
 import { Robot } from '@/modules/pudu/robot/entities/robot.entity';
-import { Store } from '@/modules/pudu/store/entities/store.entity';
+import { Shop } from '@/modules/pudu/shop/entities/shop.entity';
 
 type PuduLoginResult = {
   code?: number;
@@ -60,7 +60,7 @@ export class CrawlerService {
       this.unixTime = this.helper.psTimestamp(YYYY_MM_DD);
       console.log('this.unixTime : ', this.unixTime);
       await this.loginPudu();
-      const stores = await this.getPuduStoresAllPage();
+      const shops = await this.getPuduShopsAllPage();
       const robots = await this.getPuduRobotsAllPage();
       const deliveries = await this.getPuduDeliveriesAllPageByRobotIds(
         robots.map((robot) => robot.id),
@@ -93,14 +93,14 @@ export class CrawlerService {
         },
       );
 
-      console.log('store length ::::: ', stores.length);
+      console.log('shop length ::::: ', shops.length);
       console.log('robot length ::::: ', robots.length);
       console.log('delivery length ::::: ', deliveries.length);
       console.log('log length ::::: ', logs.length);
       console.log('detail length ::::: ', details.length);
 
       await this.connection.transaction(async (manager) => {
-        const StoreRepository = manager.getRepository('pudu_store');
+        const ShopRepository = manager.getRepository('pudu_shop');
         const RobotRepository = manager.getRepository('pudu_robot');
         const DeliveryRepository = manager.getRepository('pudu_delivery');
         const DeliveryLogRepository = manager.getRepository(
@@ -111,7 +111,7 @@ export class CrawlerService {
         );
 
         // //database 입력
-        await Promise.all(stores.map((store) => StoreRepository.save(store)));
+        await Promise.all(shops.map((shop) => ShopRepository.save(shop)));
         await Promise.all(robots.map((robot) => RobotRepository.save(robot)));
         await Promise.all(
           deliveries.map((delivery) => DeliveryRepository.insert(delivery)),
@@ -177,25 +177,25 @@ export class CrawlerService {
     }
   }
 
-  async getPuduStoresAllPage() {
-    const { data } = await this.getPuduStores();
-    console.log('CrawlerService ~ getPuduStoresAllPage ~ data', data);
+  async getPuduShopsAllPage() {
+    const { data } = await this.getPuduShops();
+    console.log('CrawlerService ~ getPuduShopsAllPage ~ data', data);
     const { count, data: list } = data;
-    const { limit } = this.helper.puduGetStoresParam;
+    const { limit } = this.helper.puduGetShopsParam;
     const totalPage = Math.floor(count / limit); //2
     const remaining = await Promise.all(
-      newArray(totalPage).map((n, i) => this.getPuduStores(limit * (i + 1))),
+      newArray(totalPage).map((n, i) => this.getPuduShops(limit * (i + 1))),
     ).then((results) => results.map((res) => res.data.data).flat());
     list.push(...remaining);
     return list;
   }
 
-  async getPuduStores(offset = 0) {
-    const param = { ...this.helper.puduGetStoresParam, offset };
+  async getPuduShops(offset = 0) {
+    const param = { ...this.helper.puduGetShopsParam, offset };
     // console.log('param ::::: ', param);
 
     return await this.httpService
-      .post<PuduGetListResults<Store>>(
+      .post<PuduGetListResults<Shop>>(
         'https://cs.pudutech.com/api/shop/list',
         param,
         {

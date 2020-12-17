@@ -6,3 +6,7 @@ GET {{endpoint}}/api/pudu/delivery HTTP/1.1
 
 ### delivery 가져오기
 GET {{endpoint}}/api/pudu/delivery?page=1&limit=2 HTTP/1.1
+
+
+### delivery 가져오기
+GET {{endpoint}}/api/pudu/delivery?page=1&limit=2 HTTP/1.1

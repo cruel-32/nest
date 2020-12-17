@@ -7,11 +7,11 @@ import { RobotModule } from './robot/robot.module';
 import { DeliveryModule } from './delivery/delivery.module';
 import { DeliveryLogModule } from './delivery-log/delivery-log.module';
 import { DeliveryDetailModule } from './delivery-detail/delivery-detail.module';
-import { StoreModule } from './store/store.module';
+import { ShopModule } from './shop/shop.module';
 
 @Module({
   controllers: [PuduController],
   providers: [PuduService],
-  imports: [RobotModule, DeliveryModule, DeliveryLogModule, DeliveryDetailModule, StoreModule],
+  imports: [RobotModule, DeliveryModule, DeliveryLogModule, DeliveryDetailModule, ShopModule],
 })
 export class PuduModule {}

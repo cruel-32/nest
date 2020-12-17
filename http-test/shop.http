@@ -1,0 +1,8 @@
+@endpoint=http://127.0.0.1:8080
+
+### shop 가져오기
+GET {{endpoint}}/api/pudu/shop HTTP/1.1
+
+
+### shop 가져오기
+GET {{endpoint}}/api/pudu/shop?page=1&limit=2 HTTP/1.1

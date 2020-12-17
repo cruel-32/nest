@@ -53,4 +53,41 @@ export class DeliveryService {
   remove(id: number) {
     return `This action removes a #${id} delivery`;
   }
+
+  async getStatisticsWeeklyGroupByShops(params: {
+    ids: number[];
+    weeks: DateRange[];
+  }) {
+    console.log('params : ', params);
+    const { ids, weeks } = params;
+    const shop_ids = ids.join(',');
+    const firstStartDate = weeks?.[0].startDate;
+    const lastEndDate = weeks?.[weeks.length - 1]?.endDate;
+
+    const legends = {};
+    let rawQuery = `
+      SELECT
+        SHOP_ID, SHOP_NAME
+    `;
+
+    for (let i = 0, len = weeks.length; i < len; i++) {
+      const { startDate, endDate } = weeks[i];
+      const alias = `week_${i}`;
+      legends[alias] = `${startDate} ~ ${endDate}`;
+      rawQuery += `, SUM(CASE WHEN DATE_FORMAT(create_time, '%Y-%m-%d') BETWEEN '${startDate}' AND '${endDate}' THEN mileage ELSE 0 END) "${alias}"`;
+    }
+
+    rawQuery += `
+      FROM pudu_delivery 
+      WHERE shop_id IN (${shop_ids}) AND DATE_FORMAT(create_time, '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}'
+      GROUP BY SHOP_ID;
+    `;
+
+    const statistics = await this.deliveryRepository.query(rawQuery);
+
+    return {
+      legends,
+      statistics,
+    };
+  }
 }

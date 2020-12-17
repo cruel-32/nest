@@ -5,7 +5,7 @@ export class CrawlingHelper {
     account: process.env.PUDU_ID,
     password: process.env.PUDU_PW,
   };
-  puduGetStoresParam = {
+  puduGetShopsParam = {
     field: [
       'sn',
       'sys_sn',

@@ -1,4 +1,4 @@
-export class CreateStoreDto {
+export class CreateShopDto {
   id: number;
   create_time: string;
   cuisine: string;

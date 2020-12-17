@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'pudu_store' })
-export class Store {
+@Entity({ name: 'pudu_shop' })
+export class Shop {
   @PrimaryColumn() id: number;
   @Column({ nullable: true }) create_time: string;
   @Column({ nullable: true }) cuisine: string;
