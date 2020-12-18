@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThan } from 'typeorm';
 import {
   paginate,
   Pagination,
@@ -20,9 +20,15 @@ export class ShopService {
   ) {}
 
   async paginate(
-    options: IPaginationOptions & OrderBy,
+    options: IPaginationOptions &
+      OrderBy & {
+        hasRobot: boolean;
+      },
   ): Promise<Pagination<Shop>> {
     const queryBuilder = this.shopRepository.createQueryBuilder('c');
+    queryBuilder.where({
+      robot_count: MoreThan(0),
+    });
     queryBuilder.orderBy(`c.${options.orderBy}`, options.dir); // Or whatever you need to do
 
     return parseIntPageMeta(await paginate<Shop>(queryBuilder, options));

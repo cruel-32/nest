@@ -2,6 +2,7 @@ import { HttpService, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Connection } from 'typeorm';
 import delay from 'delay';
+import { AxiosResponse } from 'axios';
 import { Moment } from 'moment';
 import { catchError, retry, mergeMap } from 'rxjs/operators';
 import { Observable, throwError, of } from 'rxjs';
@@ -11,9 +12,11 @@ import { newArray } from '@/helper/Common';
 import { CrawlingHelper } from '@/helper/PuduCrawlingHelper';
 import { MessageGateway } from '../message/message.gateway';
 
-import { Delivery } from '@/modules/pudu/delivery/entities/delivery.entity';
+import { CreateDeliveryDto } from '@/modules/pudu/delivery/dto/create-delivery.dto';
 import { Robot } from '@/modules/pudu/robot/entities/robot.entity';
 import { Shop } from '@/modules/pudu/shop/entities/shop.entity';
+import { CreateDeliveryLogDto } from '../pudu/delivery-log/dto/create-delivery-log.dto';
+import { CreateDeliveryDetailDto } from '../pudu/delivery-detail/dto/create-delivery-detail.dto';
 
 type PuduLoginResult = {
   code?: number;
@@ -63,9 +66,14 @@ export class CrawlerService {
       const shops = await this.getPuduShopsAllPage();
       const robots = await this.getPuduRobotsAllPage();
       const deliveries = await this.getPuduDeliveriesAllPageByRobotIds(
-        robots.map((robot) => robot.id),
+        robots
+          .filter(({ frozen_time }) => frozen_time === null)
+          .map((robot) => robot.id),
       );
-      const { logs, details } = deliveries.reduce(
+      const { logs, details } = deliveries.reduce<{
+        logs: CreateDeliveryLogDto[];
+        details: CreateDeliveryDetailDto[];
+      }>(
         (obj, item) => {
           if (!item) {
             console.log('item : ', item);
@@ -99,6 +107,18 @@ export class CrawlerService {
       console.log('log length ::::: ', logs.length);
       console.log('detail length ::::: ', details.length);
 
+      console.log('shops id : ', shops.map((shop) => shop.id).join(','));
+      console.log('robots id : ', robots.map((robot) => robot.id).join(','));
+      console.log(
+        'deliveries id : ',
+        deliveries.map((delivery) => delivery.id).join(','),
+      );
+      console.log('logs id : ', logs.map((log) => log.id).join(','));
+      console.log(
+        'details id : ',
+        details.map((detail) => detail.deliveryId).join(','),
+      );
+
       await this.connection.transaction(async (manager) => {
         const ShopRepository = manager.getRepository('pudu_shop');
         const RobotRepository = manager.getRepository('pudu_robot');
@@ -114,9 +134,9 @@ export class CrawlerService {
         await Promise.all(shops.map((shop) => ShopRepository.save(shop)));
         await Promise.all(robots.map((robot) => RobotRepository.save(robot)));
         await Promise.all(
-          deliveries.map((delivery) => DeliveryRepository.insert(delivery)),
+          deliveries.map((delivery) => DeliveryRepository.save(delivery)),
         );
-        await Promise.all(logs.map((log) => DeliveryLogRepository.insert(log)));
+        await Promise.all(logs.map((log) => DeliveryLogRepository.save(log)));
         await Promise.all(
           details.map((detail) => DeliveryDetailRepository.insert(detail)),
         );
@@ -177,7 +197,7 @@ export class CrawlerService {
     }
   }
 
-  async getPuduShopsAllPage() {
+  async getPuduShopsAllPage(): Promise<Shop[]> {
     const { data } = await this.getPuduShops();
     console.log('CrawlerService ~ getPuduShopsAllPage ~ data', data);
     const { count, data: list } = data;
@@ -190,7 +210,9 @@ export class CrawlerService {
     return list;
   }
 
-  async getPuduShops(offset = 0) {
+  async getPuduShops(
+    offset = 0,
+  ): Promise<AxiosResponse<PuduGetListResults<Shop>>> {
     const param = { ...this.helper.puduGetShopsParam, offset };
     // console.log('param ::::: ', param);
 
@@ -210,7 +232,7 @@ export class CrawlerService {
           console.log(
             `limit : ${param.limit}, offset : ${offset}, count: ${res.data.count}, length : ${res.data.data.length}`,
           );
-          console.log('PuduGetListResults res.status : ', res.status);
+          console.log('getPuduShops res.status : ', res.status);
           if (res.status >= 400) {
             return throwError(`${res.status} returned from http call`);
           }
@@ -224,7 +246,7 @@ export class CrawlerService {
       .toPromise();
   }
 
-  async getPuduRobotsAllPage() {
+  async getPuduRobotsAllPage(): Promise<Robot[]> {
     const { data } = await this.getPuduRobots();
     const { count, data: list } = data;
     const { limit } = this.helper.puduGetRobotsParam;
@@ -236,7 +258,9 @@ export class CrawlerService {
     return list;
   }
 
-  async getPuduRobots(offset = 0) {
+  async getPuduRobots(
+    offset = 0,
+  ): Promise<AxiosResponse<PuduGetListResults<Robot>>> {
     const param = { ...this.helper.puduGetRobotsParam, offset };
     // console.log('param ::::: ', param);
 
@@ -253,7 +277,7 @@ export class CrawlerService {
       )
       .pipe(
         mergeMap((res) => {
-          console.log('PuduGetListResults res.status : ', res.status);
+          console.log('getPuduRobots res.status : ', res.status);
           if (res.status >= 400) {
             return throwError(`${res.status} returned from http call`);
           }
@@ -267,9 +291,11 @@ export class CrawlerService {
       .toPromise();
   }
 
-  async getPuduDeliveriesAllPageByRobotIds(robot_ids = []) {
+  async getPuduDeliveriesAllPageByRobotIds(
+    robot_ids = [],
+  ): Promise<CreateDeliveryDto[]> {
     //한번에 불러오지 않고 delay
-    const results = [];
+    const results: CreateDeliveryDto[] = [];
     for (let i = 0, len = robot_ids.length; i < len; i++) {
       console.log(`::::: delivery of ${robot_ids[i]} robot :::::`);
       const result = await this.getPuduDeliveriesAllPage(robot_ids[i]);
@@ -284,20 +310,26 @@ export class CrawlerService {
     // ).then((results) => results.flat());
   }
 
-  async getPuduDeliveriesAllPage(robot_id) {
+  async getPuduDeliveriesAllPage(robot_id): Promise<CreateDeliveryDto[]> {
     const {
       data: { count },
     } = await this.getPuduDeliveriesCount(0, robot_id);
     const { limit } = this.helper.puduGetDeliveriesParam;
     const totalPage = Math.ceil(count / limit); //2
-    const list = [];
+    const list: CreateDeliveryDto[] = [];
 
     //한번에 불러오지 않고 delay
     for (let i = 0, len = totalPage; i < len; i++) {
       // console.log(`::::: ${robot_id} robot delivery page number ${i}:::::`);
       const result = await this.getPuduDeliveries(limit * i, robot_id);
       console.log(
-        `::::: delivery of ${robot_id} robot 페이지넘버 ${i + 1} :::::`,
+        `::::: delivery of ${robot_id} robot 페이지넘버 ${
+          i + 1
+        } -> total count : ${
+          result.data.data.length
+        } deliveries id : ${result.data.data
+          .map(({ id }) => id)
+          .join(',')} :::::`,
       );
       list.push(...result.data.data);
     }
@@ -313,7 +345,10 @@ export class CrawlerService {
     return list;
   }
 
-  async getPuduDeliveriesCount(offset = 0, robot_id) {
+  async getPuduDeliveriesCount(
+    offset = 0,
+    robot_id,
+  ): Promise<AxiosResponse<PuduGetListResults<CreateDeliveryDto>>> {
     const param = {
       ...this.helper.puduGetDeliveriesParam,
       is_get_count: true,
@@ -324,7 +359,7 @@ export class CrawlerService {
 
     // console.log('param ::::: ', param);
     return await this.httpService
-      .post<PuduGetListResults<Delivery>>(
+      .post<PuduGetListResults<CreateDeliveryDto>>(
         'https://cs.pudutech.com/api/report/delivery/list',
         param,
         {
@@ -336,9 +371,9 @@ export class CrawlerService {
       )
       .pipe(
         mergeMap((res) => {
-          console.log('PuduGetListResults res.status : ', res.status);
+          console.log('getPuduDeliveriesCount res.status : ', res.status);
           if (!res.data) {
-            console.log('PuduGetListResults res.data ::: ', res.data.count);
+            console.log('getPuduDeliveriesCount res.data ::: ', res.data.count);
           }
           if (res.status >= 400) {
             return throwError(`${res.status} returned from http call`);
@@ -347,14 +382,17 @@ export class CrawlerService {
         }),
         retry(10),
         catchError((err) => {
-          console.log('PuduGetListResults err ::: ', err);
+          console.log('getPuduDeliveriesCount err ::: ', err);
           return of(err);
         }),
       )
       .toPromise();
   }
 
-  async getPuduDeliveries(offset = 0, robot_id) {
+  async getPuduDeliveries(
+    offset = 0,
+    robot_id,
+  ): Promise<AxiosResponse<PuduGetListResults<CreateDeliveryDto>>> {
     const param = {
       ...this.helper.puduGetDeliveriesParam,
       offset,
@@ -364,7 +402,7 @@ export class CrawlerService {
 
     // console.log('param ::::: ', param);
     return await this.httpService
-      .post<PuduGetListResults<Delivery>>(
+      .post<PuduGetListResults<CreateDeliveryDto>>(
         'https://cs.pudutech.com/api/report/delivery/list',
         param,
         {
@@ -376,9 +414,12 @@ export class CrawlerService {
       )
       .pipe(
         mergeMap((res) => {
-          console.log('PuduGetListResults res.status : ', res.status);
+          console.log('getPuduDeliveries res.status : ', res.status);
           if (!res.data) {
-            console.log('PuduGetListResults res.data ::: ', res.data.count);
+            console.log(
+              'getPuduDeliveries robot_ids ::: ',
+              res.data.data.map((item) => item.robot_id).join(),
+            );
           }
           if (res.status >= 400) {
             return throwError(`${res.status} returned from http call`);
@@ -387,7 +428,7 @@ export class CrawlerService {
         }),
         retry(10),
         catchError((err) => {
-          console.log('PuduGetListResults err ::: ', err);
+          console.log('getPuduDeliveries err ::: ', err);
           return of(err);
         }),
       )

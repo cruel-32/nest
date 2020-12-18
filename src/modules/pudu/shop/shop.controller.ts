@@ -28,12 +28,14 @@ export class ShopController {
   @Public()
   @Get()
   async find(
+    @Query('hasRobot') hasRobot = true,
     @Query('page') page = 1,
     @Query('limit') limit = 10,
     @Query('orderBy') orderBy = 'name',
     @Query('dir') dir = 'ASC',
   ): Promise<Pagination<Shop>> {
     return this.shopService.paginate({
+      hasRobot,
       page,
       limit,
       orderBy,

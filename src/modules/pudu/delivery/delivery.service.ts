@@ -11,7 +11,7 @@ import { Delivery } from './entities/delivery.entity';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 
-import { parseIntPageMeta } from '@/helper/Common';
+import { parseIntPageMeta, getRandomColor } from '@/helper/Common';
 
 @Injectable()
 export class DeliveryService {
@@ -67,14 +67,14 @@ export class DeliveryService {
     const legends = {};
     let rawQuery = `
       SELECT
-        SHOP_ID, SHOP_NAME
+        SHOP_NAME
     `;
 
     for (let i = 0, len = weeks.length; i < len; i++) {
       const { startDate, endDate } = weeks[i];
       const alias = `week_${i}`;
       legends[alias] = `${startDate} ~ ${endDate}`;
-      rawQuery += `, SUM(CASE WHEN DATE_FORMAT(create_time, '%Y-%m-%d') BETWEEN '${startDate}' AND '${endDate}' THEN mileage ELSE 0 END) "${alias}"`;
+      rawQuery += `, ROUND(SUM(CASE WHEN DATE_FORMAT(create_time, '%Y-%m-%d') BETWEEN '${startDate}' AND '${endDate}' THEN mileage ELSE 0 END), 2) "${alias}"`;
     }
 
     rawQuery += `
@@ -85,9 +85,43 @@ export class DeliveryService {
 
     const statistics = await this.deliveryRepository.query(rawQuery);
 
+    const legendKeys = Object.keys(legends);
+    const labels = legendKeys.map((key) => legends[key]);
+
+    const datasets = statistics.map((statistic) => {
+      const color = getRandomColor();
+      const data = legendKeys.map((key) => statistic[key]);
+
+      return {
+        label: statistic['SHOP_NAME'],
+        fill: false,
+        lineTension: 0.1,
+        borderColor: color,
+        borderCapStyle: 'butt',
+        borderDash: [],
+        borderDashOffset: 0.0,
+        borderJoinStyle: 'miter',
+        pointBorderColor: color,
+        pointBackgroundColor: '#fff',
+        pointBorderWidth: 1,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: color,
+        pointHoverBorderColor: color,
+        pointHoverBorderWidth: 2,
+        pointRadius: 1,
+        pointHitRadius: 10,
+        data,
+      };
+    });
+
+    console.log('result : ', {
+      labels,
+      datasets,
+    });
+
     return {
-      legends,
-      statistics,
+      labels,
+      datasets,
     };
   }
 }
