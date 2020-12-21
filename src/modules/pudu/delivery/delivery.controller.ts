@@ -63,6 +63,7 @@ export class DeliveryController {
     @Query('startDate') startDate = new Date(),
     @Query('endDate') endDate = new Date(),
     @Query('ids') ids = [],
+    @Query('type') type = 'distance', //distance || count
   ) {
     const startDateStrMmt: Moment = mmt(startDate);
     const endDateStrMmt: Moment = mmt(endDate);
@@ -99,9 +100,9 @@ export class DeliveryController {
       });
     }
 
-    console.log('weeks ::::::: ', weeks);
-
-    return this.deliveryService.getStatisticsWeeklyGroupByShops({
+    return this.deliveryService[
+      type === 'distance' ? 'geWeeklyDistance' : 'geWeeklyCount'
+    ]({
       ids,
       weeks,
     });
