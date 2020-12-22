@@ -128,7 +128,8 @@ export class DeliveryService {
         FROM pudu_delivery pd JOIN pudu_delivery_detail pdd ON pd.id = pdd.deliveryId
           WHERE pd.shop_id IN (${shop_ids}) AND DATE_FORMAT(pd.create_time, '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}'
       ) details
-      GROUP BY details.SHOP_ID;
+      GROUP BY details.SHOP_ID
+      ORDER BY details.SHOP_NAME;
     `;
 
     const statistics = await this.deliveryRepository.query(rawQuery);
