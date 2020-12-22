@@ -24,4 +24,5 @@ GET {{endpoint}}/api/profile HTTP/1.1
 
 ### 프로필 가져오기
 GET {{endpoint}}/api/profile HTTP/1.1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFjZGMxMzE4QGdtYWlsLmNvbSIsInN1YiI6MSwibmFtZSI6Im5hbWUxIiwiaWF0IjoxNjA2OTc0MzMzLCJleHAiOjE2MDc1NzkxMzN9.wLFek4-sqBBuqDsAsmx5atLQrgpr1hE1mFPpqhOd9X0
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGFkbWluLmNvbSIsInN1YiI6MSwibmFtZSI6IkFETUlOIiwiaWF0IjoxNjA4NjIyNzI3LCJleHAiOjE2MDkyMjc1Mjd9.TKPuHpPXELWiR8clkhnbh_Js8uWSe0nuXK1WD-Yu0tU
+
