@@ -10,13 +10,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { Pagination } from 'nestjs-typeorm-paginate';
-import { mmt } from '@/moment';
 
 import { DeliveryService } from './delivery.service';
 import { Delivery } from './entities/delivery.entity';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
-import { Moment } from 'moment';
+import { getWeelyDateRangeParams } from '@/helper/Statistics';
 
 @Controller('pudu/delivery')
 export class DeliveryController {
@@ -58,51 +57,36 @@ export class DeliveryController {
   }
 
   @Public()
-  @Get('/statistics/weekly')
-  getStatistics(
+  @Get('/statistics/weekly/distance')
+  getStatisticsWeeklyDistance(
     @Query('startDate') startDate = new Date(),
     @Query('endDate') endDate = new Date(),
     @Query('ids') ids = [],
-    @Query('type') type = 'distance', //distance || count
   ) {
-    const startDateStrMmt: Moment = mmt(startDate);
-    const endDateStrMmt: Moment = mmt(endDate);
+    const weeks = getWeelyDateRangeParams({
+      startDate,
+      endDate,
+    });
 
-    const dayDiff = endDateStrMmt.diff(startDateStrMmt, 'days');
-    const startDay = startDateStrMmt.day();
-    const endDay = endDateStrMmt.day();
-    const weeks: DateRange[] = [];
+    return this.deliveryService.geWeeklyDistance({
+      ids,
+      weeks,
+    });
+  }
 
-    if (dayDiff <= 6 && startDay <= endDay) {
-      //1개 주
-      weeks.push({
-        startDate: startDateStrMmt.format('YYYY-MM-DD'),
-        endDate: endDateStrMmt.format('YYYY-MM-DD'),
-      });
-    } else {
-      //2개 주 이상
-      const weeksCount = (dayDiff - (7 - startDay) - endDay) / 7;
-      weeks.push({
-        startDate: startDateStrMmt.format('YYYY-MM-DD'),
-        endDate: startDateStrMmt.add(6 - startDay, 'days').format('YYYY-MM-DD'),
-      });
+  @Public()
+  @Get('/statistics/weekly/count')
+  getStatisticsWeeklyCount(
+    @Query('startDate') startDate = new Date(),
+    @Query('endDate') endDate = new Date(),
+    @Query('ids') ids = [],
+  ) {
+    const weeks = getWeelyDateRangeParams({
+      startDate,
+      endDate,
+    });
 
-      for (let i = 0; i < weeksCount; i++) {
-        weeks.push({
-          startDate: startDateStrMmt.add(1, 'days').format('YYYY-MM-DD'),
-          endDate: startDateStrMmt.add(6, 'days').format('YYYY-MM-DD'),
-        });
-      }
-
-      weeks.push({
-        startDate: endDateStrMmt.add(-endDay, 'days').format('YYYY-MM-DD'),
-        endDate: endDateStrMmt.add(endDay, 'days').format('YYYY-MM-DD'),
-      });
-    }
-
-    return this.deliveryService[
-      type === 'distance' ? 'geWeeklyDistance' : 'geWeeklyCount'
-    ]({
+    return this.deliveryService.geWeeklyCount({
       ids,
       weeks,
     });

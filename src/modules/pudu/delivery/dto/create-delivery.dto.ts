@@ -1,7 +1,7 @@
 export class CreateDeliveryDto {
   id: number;
   create_time?: string;
-  timestamp?: number;
+  unix_time?: number;
   mac?: string;
   task_id?: number;
   treaty?: number;

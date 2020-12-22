@@ -76,7 +76,8 @@ export class DeliveryService {
     rawQuery += `
       FROM pudu_delivery 
       WHERE shop_id IN (${shop_ids}) AND DATE_FORMAT(create_time, '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}'
-      GROUP BY SHOP_ID;
+      GROUP BY SHOP_ID
+      ORDER BY SHOP_NAME;
     `;
 
     const statistics = await this.deliveryRepository.query(rawQuery);

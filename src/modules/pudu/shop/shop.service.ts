@@ -26,9 +26,6 @@ export class ShopService {
       },
   ): Promise<Pagination<Shop>> {
     const queryBuilder = this.shopRepository.createQueryBuilder('c');
-    queryBuilder.where({
-      robot_count: MoreThan(0),
-    });
     queryBuilder.orderBy(`c.${options.orderBy}`, options.dir); // Or whatever you need to do
 
     return parseIntPageMeta(await paginate<Shop>(queryBuilder, options));

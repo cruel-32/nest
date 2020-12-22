@@ -1,13 +1,11 @@
 import { HttpService, Injectable, Logger } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { Connection } from 'typeorm';
-import delay from 'delay';
 import { AxiosResponse } from 'axios';
-import { Moment } from 'moment';
 import { catchError, retry, mergeMap } from 'rxjs/operators';
-import { Observable, throwError, of } from 'rxjs';
+import { throwError, of } from 'rxjs';
 
-import { mmt } from '@/moment';
+import { mmt, Moment } from '@/moment';
 import { newArray } from '@/helper/Common';
 import { CrawlingHelper } from '@/helper/PuduCrawlingHelper';
 import { MessageGateway } from '../message/message.gateway';
@@ -68,7 +66,16 @@ export class CrawlerService {
       const deliveries = await this.getPuduDeliveriesAllPageByRobotIds(
         robots
           .filter(({ frozen_time }) => frozen_time === null)
-          .map((robot) => robot.id),
+          .map((robot) => {
+            const { id, shop_id } = robot;
+            const shop = shops.find(({ id }) => id === shop_id);
+
+            return {
+              id,
+              shop_id: shop.id,
+              shop_name: shop.name,
+            };
+          }),
       );
       const { logs, details } = deliveries.reduce<{
         logs: CreateDeliveryLogDto[];
@@ -292,15 +299,32 @@ export class CrawlerService {
   }
 
   async getPuduDeliveriesAllPageByRobotIds(
-    robot_ids = [],
+    robot_ids: {
+      id: number;
+      shop_id: number;
+      shop_name: string;
+    }[] = [],
   ): Promise<CreateDeliveryDto[]> {
     //한번에 불러오지 않고 delay
     const results: CreateDeliveryDto[] = [];
     for (let i = 0, len = robot_ids.length; i < len; i++) {
-      console.log(`::::: delivery of ${robot_ids[i]} robot :::::`);
-      const result = await this.getPuduDeliveriesAllPage(robot_ids[i]);
+      const robot = robot_ids[i];
+      const { id: robot_id, shop_id, shop_name } = robot;
+
+      console.log(`::::: delivery of ${robot_id} robot :::::`);
+      const result = await this.getPuduDeliveriesAllPage(robot_id);
+
       // console.log('all page result ::: ', result);
-      results.push(...result);
+
+      //robot_id와 shop_id, shop_name을 pudu쪽 api에서 빼버리는 바람에 직접 추가해줘야함.
+      results.push(
+        ...result.map((result) => ({
+          ...result,
+          robot_id,
+          shop_id,
+          shop_name,
+        })),
+      );
     }
     return results;
 

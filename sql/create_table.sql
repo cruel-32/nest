@@ -21,39 +21,43 @@ CREATE TABLE `pudu_robot` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `pudu_delivery` (
-  `id` int(11) NOT NULL,
-  `create_time` varchar(255) DEFAULT NULL,
-  `timestamp` bigint(20) DEFAULT NULL,
-  `mac` varchar(255) DEFAULT NULL,
-  `task_id` bigint(20) DEFAULT NULL,
-  `treaty` int(11) DEFAULT NULL,
-  `log_type` int(11) DEFAULT NULL,
-  `task_type` int(11) DEFAULT NULL,
-  `report_number` int(11) DEFAULT NULL,
-  `softver` varchar(255) DEFAULT NULL,
-  `hardver` varchar(255) DEFAULT NULL,
-  `product_code` varchar(255) DEFAULT NULL,
-  `table_count` int(11) DEFAULT NULL,
-  `tray_count` int(11) DEFAULT NULL,
-  `mileage` double DEFAULT NULL,
-  `average` double DEFAULT NULL,
-  `duration` int(11) DEFAULT NULL,
-  `duration_back` int(11) DEFAULT NULL,
-  `duration_delivery` int(11) DEFAULT NULL,
-  `duration_pause` int(11) DEFAULT NULL,
-  `duration_wait` int(11) DEFAULT NULL,
-  `interrupt` int(11) DEFAULT NULL,
-  `battery_end` int(11) DEFAULT NULL,
-  `task_finish` int(11) DEFAULT NULL,
-  `status` int(11) DEFAULT NULL,
-  `log` text DEFAULT NULL,
-  `robot_id` int(11) NOT NULL,
-  `shop_id` int(11) DEFAULT NULL,
-  `shop_name` varchar(255) DEFAULT NULL,
-  `createdAt` datetime NOT NULL,
-  `updatedAt` datetime NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+	`id` INT(11) NOT NULL,
+	`create_time` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`unix_time` BIGINT(20) NULL,
+	`mac` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`task_id` BIGINT(20) NULL,
+	`treaty` INT(11) NULL,
+	`log_type` INT(11) NULL,
+	`task_type` INT(11) NULL,
+	`report_number` INT(11) NULL,
+	`softver` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`hardver` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`product_code` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`table_count` INT(11) NULL,
+	`tray_count` INT(11) NULL,
+	`mileage` DOUBLE NULL,
+	`average` DOUBLE NULL,
+	`duration` INT(11) NULL,
+	`duration_back` INT(11) NULL,
+	`duration_delivery` INT(11) NULL,
+	`duration_pause` INT(11) NULL,
+	`duration_wait` INT(11) NULL,
+	`interrupt` INT(11) NULL,
+	`battery_end` INT(11) NULL,
+	`task_finish` INT(11) NULL,
+	`status` INT(11) NULL,
+	`log` TEXT NULL COLLATE 'utf8mb4_general_ci',
+	`robot_id` INT(11) NOT NULL,
+	`shop_id` INT(11) NULL,
+	`shop_name` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`createdAt` DATETIME NOT NULL,
+	`updatedAt` DATETIME NOT NULL,
+	PRIMARY KEY (`id`) USING BTREE
+)
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;
+
 
 CREATE TABLE `pudu_delivery_detail` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
@@ -279,22 +283,50 @@ CREATE TABLE `keenon_robot_model` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE `tasks` (
-  `date` varchar(255) DEFAULT NULL,
-  `progress` varchar(255) DEFAULT NULL,
-  `returnEmail` varchar(255) DEFAULT NULL,
-  `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `description` text DEFAULT NULL,
-  PRIMARY KEY (`date`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+	`date` VARCHAR(255) NOT NULL COLLATE 'utf8mb4_general_ci',
+	`progress` VARCHAR(255) NOT NULL COLLATE 'utf8mb4_general_ci',
+	`returnEmail` VARCHAR(255) NOT NULL COLLATE 'utf8mb4_general_ci',
+	`runningTime` INT(11) NOT NULL,
+	`message` TEXT NOT NULL COLLATE 'utf8mb4_general_ci',
+	`createdAt` DATETIME NOT NULL DEFAULT current_timestamp(),
+	`updatedAt` DATETIME NOT NULL DEFAULT current_timestamp(),
+	PRIMARY KEY (`date`) USING BTREE
+)
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;
 
 CREATE TABLE `users` (
-  `id` BIGINT(20) NOT NULL AUTO_INCREMENT,
-  `name` varchar(20) NOT NULL COLLATE 'utf8mb4_unicode_520_ci',
-  `email` varchar(100) NOT NULL COLLATE 'utf8mb4_unicode_520_ci',
-  `password` varchar(80) NOT NULL COLLATE 'utf8mb4_unicode_520_ci',
-  `role` varchar(20) COLLATE 'utf8mb4_unicode_520_ci',
-  `createdAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updatedAt` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4;
+	`id` INT(11) NOT NULL AUTO_INCREMENT,
+	`name` VARCHAR(20) NOT NULL COLLATE 'utf8mb4_general_ci',
+	`email` VARCHAR(100) NOT NULL COLLATE 'utf8mb4_general_ci',
+	`password` VARCHAR(80) NOT NULL COLLATE 'utf8mb4_general_ci',
+	`role` VARCHAR(20) NOT NULL DEFAULT GUEST COLLATE 'utf8mb4_general_ci',
+	`createdAt` DATETIME(6) NOT NULL DEFAULT current_timestamp(6),
+	`updatedAt` DATETIME(6) NOT NULL DEFAULT current_timestamp(6),
+	PRIMARY KEY (`id`) USING BTREE
+)
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=7
+;
+
+CREATE TABLE `pudu_shop` (
+	`id` INT(11) NOT NULL,
+	`create_time` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`cuisine` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`grade` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`name` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`operation_status` INT(11) NULL,
+	`robot_count` INT(11) NULL,
+	`robot_use_type` TEXT NULL COLLATE 'utf8mb4_general_ci',
+	`shop_type` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`sn` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`sys_sn` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`createdAt` DATETIME NOT NULL DEFAULT current_timestamp(),
+	`updatedAt` DATETIME NOT NULL DEFAULT current_timestamp(),
+	PRIMARY KEY (`id`) USING BTREE
+)
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;
