@@ -1,8 +1,4 @@
-import {
-  paginate,
-  Pagination,
-  IPaginationOptions,
-} from 'nestjs-typeorm-paginate';
+import { Pagination } from 'nestjs-typeorm-paginate';
 
 export const newArray = (length = 0) => {
   const list = new Array(length);

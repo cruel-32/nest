@@ -17,13 +17,11 @@ import { UpdateTasksDto } from './dto/update-tasks.dto';
 export class TasksController {
   constructor(private readonly TasksService: TasksService) {}
 
-  @Public()
   @Post()
   create(@Body() createTasksDto: CreateTasksDto) {
     return this.TasksService.create(createTasksDto);
   }
 
-  @Public()
   @Get()
   async findByPaginate(@Query('page') page = 1, @Query('limit') limit = 10) {
     return this.TasksService.findTasksWithPaginate({

@@ -25,7 +25,6 @@ export class ShopController {
     return this.shopService.create(createShopDto);
   }
 
-  @Public()
   @Get()
   async find(
     @Query('hasRobot') hasRobot = true,

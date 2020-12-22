@@ -26,7 +26,6 @@ export class DeliveryController {
     return this.deliveryService.create(createDeliveryDto);
   }
 
-  @Public()
   @Get()
   async find(
     @Query('page') page = 1,
@@ -56,7 +55,6 @@ export class DeliveryController {
     return this.deliveryService.remove(+id);
   }
 
-  @Public()
   @Get('/statistics/weekly/distance')
   getStatisticsWeeklyDistance(
     @Query('startDate') startDate = new Date(),
@@ -74,7 +72,6 @@ export class DeliveryController {
     });
   }
 
-  @Public()
   @Get('/statistics/weekly/count')
   getStatisticsWeeklyCount(
     @Query('startDate') startDate = new Date(),

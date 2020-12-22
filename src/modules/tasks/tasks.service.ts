@@ -30,16 +30,12 @@ export class TasksService {
 
   private readonly logger = new Logger(TasksService.name);
 
-  getSubtractDate(day: number): string {
-    return new mmt().subtract(day, 'day').format('YYYY-MM-DD');
-  }
-
   @Interval(1000 * 60 * 60 * 2)
   // @Cron('* 0 * * * *')
   async createTodayTask() {
     this.logger.debug(':::: Create Today Task ::::');
     if (!this.messageGateway.taskingId) {
-      const date = this.getSubtractDate(3); //매일 하루전 3일전 스케쥴을 등록
+      const date = new mmt().subtract(3, 'day').format('YYYY-MM-DD'); //매일 하루전 3일전 스케쥴을 등록
       const isExist = await this.tasksRepository
         .findOne({
           where: {
@@ -63,7 +59,7 @@ export class TasksService {
   // @Cron('* * 6 * * *')
   async runTodayTask() {
     if (!this.messageGateway.taskingId) {
-      const date = this.getSubtractDate(3);
+      const date = new mmt().subtract(3, 'day').format('YYYY-MM-DD');
       console.log('date : ', date);
       const task = await this.tasksRepository.findOne({
         where: {
