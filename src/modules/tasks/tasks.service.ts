@@ -39,17 +39,18 @@ export class TasksService {
       const isExist = await this.tasksRepository
         .findOne({
           where: {
-            date,
+            id: date,
           },
         })
-        .then((item) => !!item?.date);
+        .then((item) => !!item?.id);
 
       if (!isExist) {
         this.create({
-          date,
+          id: date,
           progress: 'waiting',
           returnEmail: 'mz_choeseunghui@woowafriends.com',
           runningTime: 0,
+          message: '',
         });
       }
     }
@@ -63,11 +64,11 @@ export class TasksService {
       console.log('date : ', date);
       const task = await this.tasksRepository.findOne({
         where: {
-          progress: In(['waiting', 'failed']),
-          date: LessThanOrEqual(date),
+          progress: 'waiting',
+          id: LessThanOrEqual(date),
         },
         order: {
-          date: 'ASC',
+          id: 'ASC',
         },
       });
 
@@ -75,7 +76,7 @@ export class TasksService {
 
       if (task) {
         this.logger.debug(':::: Run Today Task ::::');
-        this.crawlerService.crawlingPudu(task.date);
+        this.crawlerService.crawlingPudu(task.id);
       }
     }
   }
@@ -98,7 +99,7 @@ export class TasksService {
     options: IPaginationOptions,
   ): Promise<Pagination<Tasks>> {
     const queryBuilder = this.tasksRepository.createQueryBuilder('c');
-    queryBuilder.orderBy('c.date', 'DESC'); // Or whatever you need to do
+    queryBuilder.orderBy('c.id', 'DESC'); // Or whatever you need to do
 
     return parseIntPageMeta(await paginate<Tasks>(queryBuilder, options));
   }

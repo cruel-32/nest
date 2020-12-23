@@ -8,7 +8,7 @@ import {
 
 @Entity({ name: 'tasks' })
 export class Tasks {
-  @PrimaryColumn() date: string;
+  @PrimaryColumn() id: string;
   @Column() progress: string;
   @Column() returnEmail: string;
   @Column() runningTime: number;

@@ -2,6 +2,7 @@
 
 ### task 불러오기
 GET {{endpoint}}/api/tasks HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGFkbWluLmNvbSIsInN1YiI6MSwibmFtZSI6IkFETUlOIiwiaWF0IjoxNjA4NjIyNzI3LCJleHAiOjE2MDkyMjc1Mjd9.TKPuHpPXELWiR8clkhnbh_Js8uWSe0nuXK1WD-Yu0tU
 
 
 ### task 생성
