@@ -18,6 +18,7 @@ import { UsersModule } from './modules/users/users.module';
 import { TasksModule } from './modules/tasks/Tasks.module';
 import { CrawlerModule } from './modules/crawler/crawler.module';
 import { MessageModule } from './modules/message/message.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MessageModule } from './modules/message/message.module';
     TasksModule,
     CrawlerModule,
     MessageModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [

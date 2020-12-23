@@ -1,17 +1,6 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Put,
-  Param,
-  Delete,
-  Query,
-} from '@nestjs/common';
-import { Public } from '@/decorators/jwt.decorator';
+import { Controller, Get, Post, Body, Query } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTasksDto } from './dto/create-tasks.dto';
-import { UpdateTasksDto } from './dto/update-tasks.dto';
 
 @Controller('tasks')
 export class TasksController {
