@@ -15,7 +15,10 @@ import { DeliveryService } from './delivery.service';
 import { Delivery } from './entities/delivery.entity';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
-import { getWeelyDateRangeParams } from '@/helper/Statistics';
+import {
+  getWeelyDateRangeParams,
+  getByDaykDateListParams,
+} from '@/helper/Statistics';
 
 @Controller('pudu/delivery')
 export class DeliveryController {
@@ -66,7 +69,7 @@ export class DeliveryController {
       endDate,
     });
 
-    return this.deliveryService.geWeeklyDistance({
+    return this.deliveryService.getWeeklyDistance({
       ids,
       weeks,
     });
@@ -83,9 +86,45 @@ export class DeliveryController {
       endDate,
     });
 
-    return this.deliveryService.geWeeklyCount({
+    return this.deliveryService.getWeeklyCount({
       ids,
       weeks,
+    });
+  }
+
+  @Get('/statistics/byDay/distance')
+  getStatisticsByDayDistance(
+    @Query('startDate') startDate = new Date(),
+    @Query('endDate') endDate = new Date(),
+    @Query('ids') ids = [],
+  ) {
+    const dateList = getByDaykDateListParams({
+      startDate,
+      endDate,
+    });
+
+    return this.deliveryService.getByDayMileage({
+      ids,
+      dateList,
+    });
+  }
+
+  @Get('/statistics/byDay/count')
+  getStatisticsByDayCount(
+    @Query('startDate') startDate = new Date(),
+    @Query('endDate') endDate = new Date(),
+    @Query('ids') ids = [],
+  ) {
+    const dateList = getByDaykDateListParams({
+      startDate,
+      endDate,
+    });
+
+    console.log('dateList : ', dateList);
+
+    return this.deliveryService.getByDayMileage({
+      ids,
+      dateList,
     });
   }
 }

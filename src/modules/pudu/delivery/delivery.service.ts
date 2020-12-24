@@ -6,6 +6,7 @@ import {
   Pagination,
   IPaginationOptions,
 } from 'nestjs-typeorm-paginate';
+import { mmt, Moment } from '@/moment';
 
 import { Delivery } from './entities/delivery.entity';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
@@ -38,7 +39,6 @@ export class DeliveryService {
   }
 
   create(createDeliveryDto: CreateDeliveryDto) {
-    console.log('createDeliveryDto ::::: ', createDeliveryDto);
     return this.deliveryRepository.insert(createDeliveryDto);
   }
 
@@ -54,7 +54,7 @@ export class DeliveryService {
     return `This action removes a #${id} delivery`;
   }
 
-  async geWeeklyDistance(params: { ids: number[]; weeks: DateRange[] }) {
+  async getWeeklyDistance(params: { ids: number[]; weeks: DateRange[] }) {
     const { ids, weeks } = params;
     const shop_ids = ids.join(',');
     const firstStartDate = weeks?.[0].startDate;
@@ -63,6 +63,7 @@ export class DeliveryService {
     const legends = {};
     let rawQuery = `
       SELECT
+        SHOP_ID,
         SHOP_NAME
     `;
 
@@ -70,12 +71,12 @@ export class DeliveryService {
       const { startDate, endDate } = weeks[i];
       const alias = `week_${i}`;
       legends[alias] = `${startDate} ~ ${endDate}`;
-      rawQuery += `, ROUND(SUM(CASE WHEN DATE_FORMAT(create_time, '%Y-%m-%d') BETWEEN '${startDate}' AND '${endDate}' THEN mileage ELSE 0 END), 2) "${alias}"`;
+      rawQuery += `, ROUND(SUM(CASE WHEN DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') BETWEEN '${startDate}' AND '${endDate}' THEN mileage ELSE 0 END), 2) "${alias}"`;
     }
 
     rawQuery += `
       FROM pudu_delivery 
-      WHERE shop_id IN (${shop_ids}) AND DATE_FORMAT(create_time, '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}'
+      WHERE shop_id IN (${shop_ids}) AND DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}'
       GROUP BY SHOP_ID
       ORDER BY SHOP_NAME;
     `;
@@ -86,14 +87,10 @@ export class DeliveryService {
     const labels = legendKeys.map((key) => legends[key]);
 
     const datasets = statistics.map((statistic) => ({
+      id: statistic['SHOP_ID'],
       label: statistic['SHOP_NAME'],
       data: legendKeys.map((key) => statistic[key]),
     }));
-
-    console.log('result : ', {
-      labels,
-      datasets,
-    });
 
     return {
       labels,
@@ -101,7 +98,7 @@ export class DeliveryService {
     };
   }
 
-  async geWeeklyCount(params: { ids: number[]; weeks: DateRange[] }) {
+  async getWeeklyCount(params: { ids: number[]; weeks: DateRange[] }) {
     const { ids, weeks } = params;
     const shop_ids = ids.join(',');
     const firstStartDate = weeks?.[0].startDate;
@@ -110,6 +107,7 @@ export class DeliveryService {
     const legends = {};
     let rawQuery = `
       SELECT
+        details.SHOP_ID,
         details.SHOP_NAME
     `;
 
@@ -117,7 +115,7 @@ export class DeliveryService {
       const { startDate, endDate } = weeks[i];
       const alias = `week_${i}`;
       legends[alias] = `${startDate} ~ ${endDate}`;
-      rawQuery += `, count(CASE WHEN DATE_FORMAT(details.create_time, '%Y-%m-%d') BETWEEN '${startDate}' AND '${endDate}' THEN 1 END) "${alias}"`;
+      rawQuery += `, count(CASE WHEN DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') BETWEEN '${startDate}' AND '${endDate}' THEN 1 END) "${alias}"`;
     }
 
     rawQuery += `
@@ -125,9 +123,9 @@ export class DeliveryService {
         SELECT
           pd.SHOP_ID AS SHOP_ID
           ,pd.SHOP_NAME AS SHOP_NAME
-          ,pd.create_time AS create_time
+          ,pd.unix_time AS unix_time
         FROM pudu_delivery pd JOIN pudu_delivery_detail pdd ON pd.id = pdd.deliveryId
-          WHERE pd.shop_id IN (${shop_ids}) AND DATE_FORMAT(pd.create_time, '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}'
+          WHERE pd.shop_id IN (${shop_ids}) AND DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}'
       ) details
       GROUP BY details.SHOP_ID
       ORDER BY details.SHOP_NAME;
@@ -139,14 +137,114 @@ export class DeliveryService {
     const labels = legendKeys.map((key) => legends[key]);
 
     const datasets = statistics.map((statistic) => ({
+      id: statistic['SHOP_ID'],
       label: statistic['SHOP_NAME'],
       data: legendKeys.map((key) => statistic[key]),
     }));
 
-    console.log('result : ', {
+    return {
       labels,
       datasets,
-    });
+    };
+  }
+
+  async getByDayMileage(params: { ids: number[]; dateList: string[] }) {
+    const { ids, dateList } = params;
+    const shop_ids = ids.join(',');
+    const firstStartDate = dateList?.[0];
+    const lastEndDate = dateList?.[dateList.length - 1];
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+
+    const legends = {};
+    let rawQuery = `
+      SELECT
+        details.SHOP_ID,
+        details.SHOP_NAME
+    `;
+
+    for (let i = 0, len = dateList.length; i < len; i++) {
+      const date = dateList[i];
+      const day = mmt(date).days();
+      const alias = `${days[day]}`;
+      legends[alias] = `${date}`;
+      rawQuery += `, count(CASE WHEN DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') = '${date}' THEN 1 END) "${alias}"`;
+    }
+
+    rawQuery += `
+      FROM (
+        SELECT
+          pd.SHOP_ID AS SHOP_ID
+          ,pd.SHOP_NAME AS SHOP_NAME
+          ,pd.unix_time AS unix_time
+        FROM pudu_delivery pd JOIN pudu_delivery_detail pdd ON pd.id = pdd.deliveryId
+          WHERE pd.shop_id IN (${shop_ids}) AND DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}'
+      ) details
+      GROUP BY details.SHOP_ID
+      ORDER BY details.SHOP_NAME;
+    `;
+
+    const statistics = await this.deliveryRepository.query(rawQuery);
+
+    const legendKeys = Object.keys(legends);
+    const labels = legendKeys.map((key) => `${key} (${legends[key]})`);
+
+    const datasets = statistics.map((statistic) => ({
+      id: statistic['SHOP_ID'],
+      label: statistic['SHOP_NAME'],
+      data: legendKeys.map((key) => statistic[key]),
+    }));
+
+    return {
+      labels,
+      datasets,
+    };
+  }
+
+  async getByDayCount(params: { ids: number[]; dateList: string[] }) {
+    const { ids, dateList } = params;
+    const shop_ids = ids.join(',');
+    const firstStartDate = dateList?.[0];
+    const lastEndDate = dateList?.[dateList.length - 1];
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+
+    const legends = {};
+    let rawQuery = `
+      SELECT
+        details.SHOP_ID,
+        details.SHOP_NAME
+    `;
+
+    for (let i = 0, len = dateList.length; i < len; i++) {
+      const date = dateList[i];
+      const day = mmt(date).days();
+      const alias = `${days[day]} (${date})`;
+      legends[alias] = `${date}`;
+      rawQuery += `, count(CASE WHEN DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') = '${date}' THEN 1 END) "${alias}"`;
+    }
+
+    rawQuery += `
+      FROM (
+        SELECT
+          pd.SHOP_ID AS SHOP_ID
+          ,pd.SHOP_NAME AS SHOP_NAME
+          ,pd.unix_time AS unix_time
+        FROM pudu_delivery pd JOIN pudu_delivery_detail pdd ON pd.id = pdd.deliveryId
+          WHERE pd.shop_id IN (${shop_ids}) AND DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}'
+      ) details
+      GROUP BY details.SHOP_ID
+      ORDER BY details.SHOP_NAME;
+    `;
+
+    const statistics = await this.deliveryRepository.query(rawQuery);
+
+    const legendKeys = Object.keys(legends);
+    const labels = legendKeys.map((key) => `${key} (${legends[key]})`);
+
+    const datasets = statistics.map((statistic) => ({
+      id: statistic['SHOP_ID'],
+      label: statistic['SHOP_NAME'],
+      data: legendKeys.map((key) => statistic[key]),
+    }));
 
     return {
       labels,

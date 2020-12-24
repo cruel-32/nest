@@ -4,13 +4,16 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm';
 
 @Entity({ name: 'pudu_delivery' })
 export class Delivery {
   @PrimaryColumn() id: number;
   @Column({ nullable: true }) create_time: string;
-  @Column({ nullable: true, type: 'bigint' }) unix_time: number;
+  @Index('unix_time_index')
+  @Column({ nullable: true, type: 'bigint' })
+  unix_time: number;
   @Column({ nullable: true }) mac: string;
   @Column({ nullable: true, type: 'bigint' }) task_id: number;
   @Column({ nullable: true }) treaty: number;

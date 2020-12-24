@@ -47,16 +47,18 @@ CREATE TABLE `pudu_delivery` (
 	`task_finish` INT(11) NULL,
 	`status` INT(11) NULL,
 	`log` TEXT NULL COLLATE 'utf8mb4_general_ci',
-	`robot_id` INT(11) NOT NULL,
+	`robot_id` INT(11) NULL,
 	`shop_id` INT(11) NULL,
 	`shop_name` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
-	`createdAt` DATETIME NOT NULL,
-	`updatedAt` DATETIME NOT NULL,
-	PRIMARY KEY (`id`) USING BTREE
+	`createdAt` DATETIME NOT NULL DEFAULT current_timestamp(),
+	`updatedAt` DATETIME NOT NULL DEFAULT current_timestamp(),
+	PRIMARY KEY (`id`) USING BTREE,
+	INDEX `unix_time_index` (`unix_time`) USING BTREE
 )
 COLLATE='utf8mb4_general_ci'
 ENGINE=InnoDB
 ;
+
 
 
 CREATE TABLE `pudu_delivery_detail` (
@@ -95,6 +97,26 @@ CREATE TABLE `pudu_delivery_log` (
   `updatedAt` datetime NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE `pudu_shop` (
+	`id` INT(11) NOT NULL,
+	`create_time` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`cuisine` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`grade` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`name` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`operation_status` INT(11) NULL,
+	`robot_count` INT(11) NULL,
+	`robot_use_type` TEXT NULL COLLATE 'utf8mb4_general_ci',
+	`shop_type` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`sn` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`sys_sn` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
+	`createdAt` DATETIME NOT NULL DEFAULT current_timestamp(),
+	`updatedAt` DATETIME NOT NULL DEFAULT current_timestamp(),
+	PRIMARY KEY (`id`) USING BTREE
+)
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;
 
 CREATE TABLE `keenon_delivery` (
   `backMileage` int(11) DEFAULT NULL,
@@ -309,24 +331,4 @@ CREATE TABLE `users` (
 COLLATE='utf8mb4_general_ci'
 ENGINE=InnoDB
 AUTO_INCREMENT=7
-;
-
-CREATE TABLE `pudu_shop` (
-	`id` INT(11) NOT NULL,
-	`create_time` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
-	`cuisine` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
-	`grade` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
-	`name` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
-	`operation_status` INT(11) NULL,
-	`robot_count` INT(11) NULL,
-	`robot_use_type` TEXT NULL COLLATE 'utf8mb4_general_ci',
-	`shop_type` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
-	`sn` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
-	`sys_sn` VARCHAR(255) NULL COLLATE 'utf8mb4_general_ci',
-	`createdAt` DATETIME NOT NULL DEFAULT current_timestamp(),
-	`updatedAt` DATETIME NOT NULL DEFAULT current_timestamp(),
-	PRIMARY KEY (`id`) USING BTREE
-)
-COLLATE='utf8mb4_general_ci'
-ENGINE=InnoDB
 ;

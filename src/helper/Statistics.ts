@@ -41,3 +41,21 @@ export const getWeelyDateRangeParams = (params: {
   }
   return weeks;
 };
+
+export const getByDaykDateListParams = (params: {
+  startDate: Date;
+  endDate: Date;
+}): string[] => {
+  const { startDate, endDate } = params;
+  const startDateStrMmt: Moment = mmt(startDate);
+  const endDateStrMmt: Moment = mmt(endDate);
+
+  const dayDiff = endDateStrMmt.diff(startDateStrMmt, 'days');
+  const dateList: string[] = [startDateStrMmt.format('YYYY-MM-DD')];
+
+  for (let i = 0; i < dayDiff; i += 1) {
+    dateList.push(startDateStrMmt.add(1, 'day').format('YYYY-MM-DD'));
+  }
+
+  return dateList;
+};

@@ -8,11 +8,13 @@ config({
   path: join(
     __dirname,
     '..',
-    process.env.NODE_ENV === 'production' ? '.env.prod' : '.env',
+    process.env.NODE_ENV === 'development' ? '.env' : '.env.prod',
   ),
 });
 
 console.log('process.env.DATABASE_HOST : ', process.env.DATABASE_HOST);
+console.log('process.env.DATABASE_USERNAME : ', process.env.DATABASE_USERNAME);
+console.log('process.env.DATABASE_DB : ', process.env.DATABASE_DB);
 
 export const TypeOrmConfig: TypeOrmModuleOptions = {
   type: 'mariadb',
