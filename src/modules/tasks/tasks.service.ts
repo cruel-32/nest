@@ -33,7 +33,7 @@ export class TasksService {
   @Interval(1000 * 60 * 60 * 2)
   // @Cron('* 0 * * * *')
   async createTodayTask() {
-    this.logger.debug(':::: Create Today Task ::::');
+    this.logger.debug(':::: Create Today Task Start ::::');
     if (!this.messageGateway.taskingId) {
       const date = new mmt().subtract(3, 'day').format('YYYY-MM-DD'); //매일 하루전 3일전 스케쥴을 등록
       const isExist = await this.tasksRepository
@@ -54,6 +54,7 @@ export class TasksService {
         });
       }
     }
+    this.logger.debug(':::: Create Today Task End ::::');
   }
 
   @Interval(1000 * 10)
