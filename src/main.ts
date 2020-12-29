@@ -4,8 +4,15 @@ import { AppModule } from './app.module';
 import { config } from 'dotenv';
 import * as helmet from 'helmet';
 import * as rateLimit from 'express-rate-limit';
+import { join } from 'path';
 
-config();
+config({
+  path: join(
+    __dirname,
+    '..',
+    process.env.NODE_ENV === 'development' ? '.env' : '.env.prod',
+  ),
+});
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
