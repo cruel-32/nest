@@ -15,7 +15,7 @@ import { AppService } from './app.service';
 import { PuduModule } from './modules/pudu/pudu.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
-import { TasksModule } from './modules/tasks/Tasks.module';
+import { TasksModule } from './modules/tasks/tasks.module';
 import { CrawlerModule } from './modules/crawler/crawler.module';
 import { MessageModule } from './modules/message/message.module';
 import { HealthModule } from './modules/health/health.module';

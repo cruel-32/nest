@@ -11,8 +11,8 @@ import {
 
 import { mmt } from '@/moment';
 import { Tasks } from './entities/tasks.entity';
-import { CreateTasksDto } from './dto/create-Tasks.dto';
-import { UpdateTasksDto } from './dto/update-Tasks.dto';
+import { CreateTasksDto } from './dto/create-tasks.dto';
+import { UpdateTasksDto } from './dto/update-tasks.dto';
 import { MessageGateway } from '../message/message.gateway';
 import { CrawlerService } from '../crawler/crawler.service';
 

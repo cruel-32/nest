@@ -2,8 +2,8 @@ import { Module, HttpModule } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 import { MessageModule } from '@/modules/message/message.module';
-import { TasksService } from './Tasks.service';
-import { TasksController } from './Tasks.controller';
+import { TasksService } from './tasks.service';
+import { TasksController } from './tasks.controller';
 import { Tasks } from './entities/tasks.entity';
 import { CrawlerModule } from '../crawler/crawler.module';
 
