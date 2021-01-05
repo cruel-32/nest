@@ -122,7 +122,7 @@ export class DeliveryController {
 
     console.log('dateList : ', dateList);
 
-    return this.deliveryService.getByDayMileage({
+    return this.deliveryService.getByDayCount({
       ids,
       dateList,
     });

@@ -6,7 +6,4 @@ GET {{endpoint}}/api/pudu/delivery HTTP/1.1
 
 ### delivery 가져오기
 GET {{endpoint}}/api/pudu/delivery?page=1&limit=2 HTTP/1.1
-
-
-### delivery 가져오기
-GET {{endpoint}}/api/pudu/delivery?page=1&limit=2 HTTP/1.1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGFkbWluLmNvbSIsInN1YiI6MSwibmFtZSI6IkFETUlOIiwiaWF0IjoxNjA5NzQwOTA0LCJleHAiOjE2MTAzNDU3MDR9.iHPDujYMIx59dk8UJ6Zkwgk2WWuJjozuv3RJGvAJLFk

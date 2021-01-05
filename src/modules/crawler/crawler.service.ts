@@ -11,10 +11,11 @@ import { CrawlingHelper } from '@/helper/PuduCrawlingHelper';
 import { MessageGateway } from '../message/message.gateway';
 
 import { CreateDeliveryDto } from '@/modules/pudu/delivery/dto/create-delivery.dto';
-import { Robot } from '@/modules/pudu/robot/entities/robot.entity';
-import { Shop } from '@/modules/pudu/shop/entities/shop.entity';
+import { CreateRobotDto } from '@/modules/pudu/robot/dto/create-robot.dto';
+import { CreateShopDto } from '@/modules/pudu/shop/dto/create-shop.dto';
 import { CreateDeliveryLogDto } from '../pudu/delivery-log/dto/create-delivery-log.dto';
 import { CreateDeliveryDetailDto } from '../pudu/delivery-detail/dto/create-delivery-detail.dto';
+import { CreateStatisticDto } from '../statistics/dto/create-statistic.dto';
 
 type PuduLoginResult = {
   code?: number;
@@ -59,7 +60,6 @@ export class CrawlerService {
     }, 1000);
     try {
       this.unixTime = this.helper.psTimestamp(YYYY_MM_DD);
-      console.log('this.unixTime : ', this.unixTime);
       await this.loginPudu();
       const shops = await this.getPuduShopsAllPage();
       const robots = await this.getPuduRobotsAllPage();
@@ -83,8 +83,6 @@ export class CrawlerService {
       }>(
         (obj, item) => {
           if (!item) {
-            console.log('item : ', item);
-            console.log('deliveries : ', deliveries);
             return obj;
           }
           const { id } = item;
@@ -108,23 +106,33 @@ export class CrawlerService {
         },
       );
 
-      console.log('shop length ::::: ', shops.length);
-      console.log('robot length ::::: ', robots.length);
-      console.log('delivery length ::::: ', deliveries.length);
-      console.log('log length ::::: ', logs.length);
-      console.log('detail length ::::: ', details.length);
+      const puduMileages = deliveries.reduce((obj, { shop_id, mileage }) => {
+        if (obj[shop_id]) {
+          obj[shop_id] = obj[shop_id] + mileage;
+        } else {
+          obj[shop_id] = mileage;
+        }
+        return obj;
+      }, {});
 
-      console.log('shops id : ', shops.map((shop) => shop.id).join(','));
-      console.log('robots id : ', robots.map((robot) => robot.id).join(','));
-      console.log(
-        'deliveries id : ',
-        deliveries.map((delivery) => delivery.id).join(','),
-      );
-      console.log('logs id : ', logs.map((log) => log.id).join(','));
-      console.log(
-        'details id : ',
-        details.map((detail) => detail.deliveryId).join(','),
-      );
+      const puduCounts = deliveries.reduce((obj, { id, shop_id }) => {
+        const filteredDetails = details.filter(({ deliveryId }) => {
+          return deliveryId == id;
+        });
+
+        if (obj[shop_id]) {
+          obj[shop_id] = obj[shop_id] + filteredDetails.length;
+        } else {
+          obj[shop_id] = filteredDetails.length;
+        }
+        return obj;
+      }, {});
+
+      const createStatisticDto: CreateStatisticDto = {
+        id: YYYY_MM_DD,
+        puduMileages: JSON.stringify(puduMileages),
+        puduCounts: JSON.stringify(puduCounts),
+      };
 
       await this.connection.transaction(async (manager) => {
         const ShopRepository = manager.getRepository('pudu_shop');
@@ -136,6 +144,7 @@ export class CrawlerService {
         const DeliveryDetailRepository = manager.getRepository(
           'pudu_delivery_detail',
         );
+        const StatisticsRepository = manager.getRepository('statistics');
 
         // //database 입력
         await Promise.all(shops.map((shop) => ShopRepository.save(shop)));
@@ -147,6 +156,8 @@ export class CrawlerService {
         await Promise.all(
           details.map((detail) => DeliveryDetailRepository.insert(detail)),
         );
+
+        await StatisticsRepository.save(createStatisticDto);
       });
 
       const endTime: Moment = mmt();
@@ -204,7 +215,7 @@ export class CrawlerService {
     }
   }
 
-  async getPuduShopsAllPage(): Promise<Shop[]> {
+  async getPuduShopsAllPage(): Promise<CreateShopDto[]> {
     const { data } = await this.getPuduShops();
     console.log('CrawlerService ~ getPuduShopsAllPage ~ data', data);
     const { count, data: list } = data;
@@ -219,12 +230,12 @@ export class CrawlerService {
 
   async getPuduShops(
     offset = 0,
-  ): Promise<AxiosResponse<PuduGetListResults<Shop>>> {
+  ): Promise<AxiosResponse<PuduGetListResults<CreateShopDto>>> {
     const param = { ...this.helper.puduGetShopsParam, offset };
     // console.log('param ::::: ', param);
 
     return await this.httpService
-      .post<PuduGetListResults<Shop>>(
+      .post<PuduGetListResults<CreateShopDto>>(
         'https://cs.pudutech.com/api/shop/list',
         param,
         {
@@ -253,7 +264,7 @@ export class CrawlerService {
       .toPromise();
   }
 
-  async getPuduRobotsAllPage(): Promise<Robot[]> {
+  async getPuduRobotsAllPage(): Promise<CreateRobotDto[]> {
     const { data } = await this.getPuduRobots();
     const { count, data: list } = data;
     const { limit } = this.helper.puduGetRobotsParam;
@@ -267,12 +278,12 @@ export class CrawlerService {
 
   async getPuduRobots(
     offset = 0,
-  ): Promise<AxiosResponse<PuduGetListResults<Robot>>> {
+  ): Promise<AxiosResponse<PuduGetListResults<CreateRobotDto>>> {
     const param = { ...this.helper.puduGetRobotsParam, offset };
     // console.log('param ::::: ', param);
 
     return await this.httpService
-      .post<PuduGetListResults<Robot>>(
+      .post<PuduGetListResults<CreateRobotDto>>(
         'https://cs.pudutech.com/api/robot/bind_shop/page_list',
         param,
         {

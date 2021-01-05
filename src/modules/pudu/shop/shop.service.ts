@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, MoreThan } from 'typeorm';
+import { Repository, MoreThan, In } from 'typeorm';
 import {
   paginate,
   Pagination,
@@ -46,5 +46,13 @@ export class ShopService {
 
   remove(id: number) {
     return `This action removes a #${id} shop`;
+  }
+
+  async findAllByIds(ids: number[]) {
+    return await this.shopRepository
+      .createQueryBuilder()
+      .select()
+      .where('id', In(ids))
+      .execute();
   }
 }

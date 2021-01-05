@@ -19,6 +19,7 @@ import { TasksModule } from './modules/tasks/tasks.module';
 import { CrawlerModule } from './modules/crawler/crawler.module';
 import { MessageModule } from './modules/message/message.module';
 import { HealthModule } from './modules/health/health.module';
+import { StatisticsModule } from './modules/statistics/statistics.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { HealthModule } from './modules/health/health.module';
     CrawlerModule,
     MessageModule,
     HealthModule,
+    StatisticsModule,
   ],
   controllers: [AppController],
   providers: [

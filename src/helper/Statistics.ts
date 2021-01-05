@@ -43,8 +43,8 @@ export const getWeelyDateRangeParams = (params: {
 };
 
 export const getByDaykDateListParams = (params: {
-  startDate: Date;
-  endDate: Date;
+  startDate: Date | string;
+  endDate: Date | string;
 }): string[] => {
   const { startDate, endDate } = params;
   const startDateStrMmt: Moment = mmt(startDate);

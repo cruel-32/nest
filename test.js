@@ -39,5 +39,14 @@ const psTimestamp = (YYYYMMDD, isStart) => {
   return parseInt(timeStamp.getTime().toString().substring(0, 10));
 };
 
+const getMonthLastDay = (YYMM) => {
+  const startDate = moment(`${YYMM}-01`);
+  console.log('startDate ::::: ', startDate);
+
+  return startDate.daysInMonth();
+};
+
 console.log('psTimestamp ::::: ', psTimestamp('2020-11-30', true));
 console.log('psTimestamp ::::: ', psTimestamp('2020-11-30'));
+
+console.log('getMonthLastDay ::::: ', getMonthLastDay('2020-11'));

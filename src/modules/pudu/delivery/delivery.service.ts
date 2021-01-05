@@ -158,8 +158,8 @@ export class DeliveryService {
     const legends = {};
     let rawQuery = `
       SELECT
-        details.SHOP_ID,
-        details.SHOP_NAME
+        SHOP_ID,
+        SHOP_NAME
     `;
 
     for (let i = 0, len = dateList.length; i < len; i++) {
@@ -167,21 +167,17 @@ export class DeliveryService {
       const day = mmt(date).days();
       const alias = `${days[day]}`;
       legends[alias] = `${date}`;
-      rawQuery += `, count(CASE WHEN DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') = '${date}' THEN 1 END) "${alias}"`;
+      rawQuery += `, ROUND(SUM(CASE WHEN DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') = '${date}' THEN mileage ELSE 0 END), 2) "${alias}"`;
     }
 
     rawQuery += `
-      FROM (
-        SELECT
-          pd.SHOP_ID AS SHOP_ID
-          ,pd.SHOP_NAME AS SHOP_NAME
-          ,pd.unix_time AS unix_time
-        FROM pudu_delivery pd JOIN pudu_delivery_detail pdd ON pd.id = pdd.deliveryId
-          WHERE pd.shop_id IN (${shop_ids}) AND DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}'
-      ) details
-      GROUP BY details.SHOP_ID
-      ORDER BY details.SHOP_NAME;
+      FROM pudu_delivery 
+      WHERE shop_id IN (${shop_ids}) AND DATE_FORMAT(FROM_UNIXTIME(unix_time), '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}'
+      GROUP BY SHOP_ID
+      ORDER BY SHOP_NAME;
     `;
+
+    console.log('rawQuery ::::: ', rawQuery);
 
     const statistics = await this.deliveryRepository.query(rawQuery);
 
