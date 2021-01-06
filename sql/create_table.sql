@@ -332,3 +332,15 @@ COLLATE='utf8mb4_general_ci'
 ENGINE=InnoDB
 AUTO_INCREMENT=7
 ;
+
+CREATE TABLE `statistics` (
+	`id` VARCHAR(255) NOT NULL COLLATE 'utf8mb4_general_ci',
+	`puduMileages` TEXT NOT NULL COLLATE 'utf8mb4_general_ci',
+	`puduCounts` TEXT NOT NULL COLLATE 'utf8mb4_general_ci',
+	`createdAt` DATETIME NOT NULL DEFAULT current_timestamp(),
+	`updatedAt` DATETIME NOT NULL DEFAULT current_timestamp(),
+	PRIMARY KEY (`id`) USING BTREE
+)
+COLLATE='utf8mb4_general_ci'
+ENGINE=InnoDB
+;
