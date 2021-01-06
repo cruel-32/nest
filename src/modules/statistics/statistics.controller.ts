@@ -39,9 +39,6 @@ export class StatisticsController {
     @Query('endDate') endDate = new Date(),
     @Query('ids') ids = [],
   ) {
-    console.log('startDate :::::: ', startDate);
-    console.log('endDate ::::::: ', endDate);
-
     const weeks = getWeelyDateRangeParams({
       startDate,
       endDate,
@@ -51,6 +48,25 @@ export class StatisticsController {
     return this.statisticsService.getWeekly({
       ids,
       weeks,
+    });
+  }
+
+  @Get('/byDay')
+  getStatisticsByDay(
+    @Query('startDate') startDate = new Date(),
+    @Query('endDate') endDate = new Date(),
+    @Query('ids') ids = [],
+  ) {
+    const dateList = getByDaykDateListParams({
+      startDate,
+      endDate,
+    });
+
+    console.log('dateList : ', dateList);
+
+    return this.statisticsService.getByDay({
+      ids,
+      dateList,
     });
   }
 }

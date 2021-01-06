@@ -15,10 +15,6 @@ import { DeliveryService } from './delivery.service';
 import { Delivery } from './entities/delivery.entity';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
-import {
-  getWeelyDateRangeParams,
-  getByDaykDateListParams,
-} from '@/helper/Statistics';
 
 @Controller('pudu/delivery')
 export class DeliveryController {
@@ -56,75 +52,5 @@ export class DeliveryController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.deliveryService.remove(+id);
-  }
-
-  @Get('/statistics/weekly/distance')
-  getStatisticsWeeklyDistance(
-    @Query('startDate') startDate = new Date(),
-    @Query('endDate') endDate = new Date(),
-    @Query('ids') ids = [],
-  ) {
-    const weeks = getWeelyDateRangeParams({
-      startDate,
-      endDate,
-    });
-
-    return this.deliveryService.getWeeklyDistance({
-      ids,
-      weeks,
-    });
-  }
-
-  @Get('/statistics/weekly/count')
-  getStatisticsWeeklyCount(
-    @Query('startDate') startDate = new Date(),
-    @Query('endDate') endDate = new Date(),
-    @Query('ids') ids = [],
-  ) {
-    const weeks = getWeelyDateRangeParams({
-      startDate,
-      endDate,
-    });
-
-    return this.deliveryService.getWeeklyCount({
-      ids,
-      weeks,
-    });
-  }
-
-  @Get('/statistics/byDay/distance')
-  getStatisticsByDayDistance(
-    @Query('startDate') startDate = new Date(),
-    @Query('endDate') endDate = new Date(),
-    @Query('ids') ids = [],
-  ) {
-    const dateList = getByDaykDateListParams({
-      startDate,
-      endDate,
-    });
-
-    return this.deliveryService.getByDayMileage({
-      ids,
-      dateList,
-    });
-  }
-
-  @Get('/statistics/byDay/count')
-  getStatisticsByDayCount(
-    @Query('startDate') startDate = new Date(),
-    @Query('endDate') endDate = new Date(),
-    @Query('ids') ids = [],
-  ) {
-    const dateList = getByDaykDateListParams({
-      startDate,
-      endDate,
-    });
-
-    console.log('dateList : ', dateList);
-
-    return this.deliveryService.getByDayCount({
-      ids,
-      dateList,
-    });
   }
 }
