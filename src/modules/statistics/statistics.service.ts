@@ -18,6 +18,7 @@ export type Statistics = {
     id: number;
     label: string;
     data: number[];
+    stack?: number | string;
   }[];
 };
 
@@ -236,7 +237,6 @@ export class StatisticsService {
   async getByDay(params: { ids: number[]; dateList: string[] }) {
     const { ids, dateList } = params;
     const days = ['일', '월', '화', '수', '목', '금', '토'];
-    console.log('dateList : ', dateList);
 
     const firstStartDate = dateList?.[0];
     const lastEndDate = dateList?.[dateList.length - 1];
@@ -272,58 +272,57 @@ export class StatisticsService {
       };
     });
 
-    const labels = dateList.map((date) => {
-      const day = mmt(date).days();
-
-      return `${days[day]} (${date})`;
-    });
-
-    const results = ids.reduce<{
+    const results = statisticData.reduce<{
       byDayMileage: Statistics;
       byDayCount: Statistics;
     }>(
-      (resultObject, id) => {
-        const commonData = {
-          id: +id,
-          label: shopNames[id],
-        };
+      (object, item) => {
+        const { date, puduMileages, puduCounts } = item;
+        const order: Moment = mmt(date);
 
-        const [mileageDatasets, countsDatasets] = dateList.reduce<number[][]>(
-          (datasetsList, date) => {
-            const dailiyStatistic = statisticData.find(
-              (data) => data.date === date,
-            );
+        ids.forEach((id) => {
+          const label = `${shopNames[id]} ${order.weeks()}주차`;
 
-            const mileages = +(dailiyStatistic?.puduMileages[id] || 0);
-            const counts = dailiyStatistic?.puduCounts[id] || 0;
+          const hasMileageData = object.byDayMileage.datasets.find(
+            (data) => data.label === label,
+          );
 
-            datasetsList[0].push(parseFloat(mileages.toFixed(2)));
-            datasetsList[1].push(counts);
+          const hasCountData = object.byDayCount.datasets.find(
+            (data) => data.label === label,
+          );
 
-            return datasetsList;
-          },
-          [[], []],
-        );
+          if (!hasMileageData) {
+            object.byDayMileage.datasets.push({
+              id: +id,
+              label,
+              stack: +id,
+              data: [puduMileages[id] || 0],
+            });
+          } else {
+            hasMileageData.data.push(puduMileages[id] || 0);
+          }
 
-        resultObject.byDayMileage.datasets.push({
-          ...commonData,
-          data: mileageDatasets,
+          if (!hasCountData) {
+            object.byDayCount.datasets.push({
+              id: +id,
+              label,
+              stack: +id,
+              data: [puduCounts[id] || 0],
+            });
+          } else {
+            hasCountData.data.push(puduCounts[id] || 0);
+          }
         });
 
-        resultObject.byDayCount.datasets.push({
-          ...commonData,
-          data: countsDatasets,
-        });
-
-        return resultObject;
+        return object;
       },
       {
         byDayMileage: {
-          labels,
+          labels: days,
           datasets: [],
         },
         byDayCount: {
-          labels,
+          labels: days,
           datasets: [],
         },
       },
@@ -331,4 +330,103 @@ export class StatisticsService {
 
     return results;
   }
+
+  // async getByDay(params: { ids: number[]; dateList: string[] }) {
+  //   const { ids, dateList } = params;
+  //   const days = ['일', '월', '화', '수', '목', '금', '토'];
+  //   console.log('dateList : ', dateList);
+
+  //   const firstStartDate = dateList?.[0];
+  //   const lastEndDate = dateList?.[dateList.length - 1];
+  //   const shops = await this.shopService.findAllByIds(ids);
+  //   const shopNames = shops.reduce((names, shop) => {
+  //     const { Shop_id, Shop_name } = shop;
+
+  //     names[Shop_id] = Shop_name;
+  //     return names;
+  //   }, {});
+
+  //   const rawQuery = `
+  //     SELECT * FROM statistics WHERE DATE_FORMAT(id, '%Y-%m-%d') BETWEEN '${firstStartDate}' AND '${lastEndDate}';
+  //   `;
+
+  //   const statistics = await this.deliveryRepository.query(rawQuery);
+
+  //   const statisticData: {
+  //     date: string;
+  //     puduMileages: {
+  //       [key: string]: number;
+  //     };
+  //     puduCounts: {
+  //       [key: string]: number;
+  //     };
+  //   }[] = statistics.map((statistic) => {
+  //     const { id, puduMileages, puduCounts } = statistic;
+
+  //     return {
+  //       date: id,
+  //       puduMileages: JSON.parse(puduMileages),
+  //       puduCounts: JSON.parse(puduCounts),
+  //     };
+  //   });
+
+  //   const labels = dateList.map((date) => {
+  //     const day = mmt(date).days();
+
+  //     return `${days[day]} (${date})`;
+  //   });
+
+  //   const results = ids.reduce<{
+  //     byDayMileage: Statistics;
+  //     byDayCount: Statistics;
+  //   }>(
+  //     (resultObject, id) => {
+  //       const commonData = {
+  //         id: +id,
+  //         label: shopNames[id],
+  //       };
+
+  //       const [mileageDatasets, countsDatasets] = dateList.reduce<number[][]>(
+  //         (datasetsList, date) => {
+  //           const dailiyStatistic = statisticData.find(
+  //             (data) => data.date === date,
+  //           );
+
+  //           const mileages = +(dailiyStatistic?.puduMileages[id] || 0);
+  //           const counts = dailiyStatistic?.puduCounts[id] || 0;
+
+  //           datasetsList[0].push(parseFloat(mileages.toFixed(2)));
+  //           datasetsList[1].push(counts);
+
+  //           return datasetsList;
+  //         },
+  //         [[], []],
+  //       );
+
+  //       resultObject.byDayMileage.datasets.push({
+  //         ...commonData,
+  //         data: mileageDatasets,
+  //       });
+
+  //       resultObject.byDayCount.datasets.push({
+  //         ...commonData,
+  //         data: countsDatasets,
+  //       });
+
+  //       return resultObject;
+  //     },
+  //     {
+  //       byDayMileage: {
+  //         labels,
+  //         datasets: [],
+  //       },
+  //       byDayCount: {
+  //         labels,
+  //         datasets: [],
+  //       },
+  //     },
+  //   );
+
+  //   return results;
+  // }
 }
