@@ -17,6 +17,7 @@ export type Statistics = {
   datasets: {
     id: number;
     label: string;
+    shopName?: string;
     data: number[];
     stack?: number | string;
   }[];
@@ -281,7 +282,8 @@ export class StatisticsService {
         const order: Moment = mmt(date);
 
         ids.forEach((id) => {
-          const label = `${shopNames[id]} ${order.weeks()}주차`;
+          const shopName = shopNames[id];
+          const label = `${shopName} ${order.weeks()}주차`;
 
           const hasMileageData = object.byDayMileage.datasets.find(
             (data) => data.label === label,
@@ -295,6 +297,7 @@ export class StatisticsService {
             object.byDayMileage.datasets.push({
               id: +id,
               label,
+              shopName,
               stack: +id,
               data: [puduMileages[id] || 0],
             });
@@ -306,6 +309,7 @@ export class StatisticsService {
             object.byDayCount.datasets.push({
               id: +id,
               label,
+              shopName,
               stack: +id,
               data: [puduCounts[id] || 0],
             });
