@@ -35,7 +35,7 @@ export class TasksService {
   async createTodayTask() {
     this.logger.debug(':::: Create Today Task Start ::::');
     if (!this.messageGateway.taskingId) {
-      const date = new mmt().subtract(3, 'day').format('YYYY-MM-DD'); //매일 하루전 3일전 스케쥴을 등록
+      const date = new mmt().subtract(7, 'day').format('YYYY-MM-DD'); //매일 하루전 7일전 스케쥴을 등록
       const isExist = await this.tasksRepository
         .findOne({
           where: {
@@ -62,7 +62,7 @@ export class TasksService {
   // @Cron('* * 6 * * *')
   async runTodayTask() {
     if (!this.messageGateway.taskingId) {
-      const date = new mmt().subtract(3, 'day').format('YYYY-MM-DD');
+      const date = new mmt().subtract(7, 'day').format('YYYY-MM-DD');
       console.log('date : ', date);
       const task = await this.tasksRepository.findOne({
         where: {
