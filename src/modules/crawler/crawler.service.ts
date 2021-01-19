@@ -58,6 +58,7 @@ export class CrawlerService {
     this.messageGateway.interval = setInterval(() => {
       this.messageGateway.emitStateFromServer();
     }, 1000);
+    let transactionStartingTime = mmt();
     try {
       this.unixTime = this.helper.psTimestamp(YYYY_MM_DD);
       await this.loginPudu();
@@ -134,7 +135,7 @@ export class CrawlerService {
         puduCounts: JSON.stringify(puduCounts),
       };
 
-      const transactionStartingTime = mmt();
+      transactionStartingTime = mmt();
       await this.connection.transaction(async (manager) => {
         const ShopRepository = manager.getRepository('pudu_shop');
         const RobotRepository = manager.getRepository('pudu_robot');
@@ -182,7 +183,10 @@ export class CrawlerService {
         progress: 'failed',
         message: error.message,
         runningTime: endTime.diff(this.messageGateway.taskingTime, 'seconds'),
-        transactionTime: 0,
+        transactionTime: transactionStartingTime.diff(
+          this.messageGateway.taskingTime,
+          'seconds',
+        ),
       });
     } finally {
       clearInterval(this.messageGateway.interval);
