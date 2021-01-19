@@ -134,6 +134,7 @@ export class CrawlerService {
         puduCounts: JSON.stringify(puduCounts),
       };
 
+      const transactionStartingTime = mmt();
       await this.connection.transaction(async (manager) => {
         const ShopRepository = manager.getRepository('pudu_shop');
         const RobotRepository = manager.getRepository('pudu_robot');
@@ -167,6 +168,10 @@ export class CrawlerService {
         progress: 'completed',
         message: '크롤링 성공',
         runningTime: endTime.diff(this.messageGateway.taskingTime, 'seconds'),
+        transactionTime: transactionStartingTime.diff(
+          this.messageGateway.taskingTime,
+          'seconds',
+        ),
       });
     } catch (error) {
       console.log('error:::::', error);
@@ -177,6 +182,7 @@ export class CrawlerService {
         progress: 'failed',
         message: error.message,
         runningTime: endTime.diff(this.messageGateway.taskingTime, 'seconds'),
+        transactionTime: 0,
       });
     } finally {
       clearInterval(this.messageGateway.interval);

@@ -12,6 +12,7 @@ export class Tasks {
   @Column() progress: string;
   @Column() returnEmail: string;
   @Column() runningTime: number;
+  @Column() transactionTime: number;
   @Column({ type: 'text' }) message: string;
   @CreateDateColumn({
     precision: null,

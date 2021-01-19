@@ -12,5 +12,7 @@ export class CreateTasksDto {
   @Column()
   runningTime: number;
   @Column()
+  transactionTime: number;
+  @Column()
   message: string;
 }

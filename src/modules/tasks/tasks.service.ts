@@ -50,6 +50,7 @@ export class TasksService {
           progress: 'waiting',
           returnEmail: 'mz_choeseunghui@woowafriends.com',
           runningTime: 0,
+          transactionTime: 0,
           message: '',
         });
       }
