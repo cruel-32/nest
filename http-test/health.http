@@ -2,3 +2,12 @@
 
 ### health check
 GET {{endpoint}}/api/health HTTP/1.1
+
+
+### health check post
+POST {{endpoint}}/api/health/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "message" : "하이"
+}

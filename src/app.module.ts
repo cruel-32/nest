@@ -20,6 +20,7 @@ import { CrawlerModule } from './modules/crawler/crawler.module';
 import { MessageModule } from './modules/message/message.module';
 import { HealthModule } from './modules/health/health.module';
 import { StatisticsModule } from './modules/statistics/statistics.module';
+import { ReportModule } from './modules/report/report.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { StatisticsModule } from './modules/statistics/statistics.module';
     MessageModule,
     HealthModule,
     StatisticsModule,
+    ReportModule,
   ],
   controllers: [AppController],
   providers: [
