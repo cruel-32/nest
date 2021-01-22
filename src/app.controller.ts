@@ -1,4 +1,4 @@
-import { Controller, Request, Get } from '@nestjs/common';
+import { Controller, Request, Get, Post, Body } from '@nestjs/common';
 
 import { AppService } from './app.service';
 
@@ -14,5 +14,12 @@ export class AppController {
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;
+  }
+
+  @Post('appTest')
+  createProfile(@Body() createDto: { testMessage: string }) {
+    console.log('createDto : ', createDto);
+
+    return null;
   }
 }

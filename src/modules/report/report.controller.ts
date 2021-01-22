@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Param, Post, Body } from '@nestjs/common';
 
 import { ReportService } from './report.service';
 import { CreateReportDto } from './dto/create-report.dto';
@@ -7,8 +7,11 @@ import { CreateReportDto } from './dto/create-report.dto';
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 
-  @Post()
-  create(@Body() createReportDto: CreateReportDto) {
-    return this.reportService.create(createReportDto);
+  @Post('/:statistics')
+  create(
+    @Param('statistics') statistics,
+    @Body() createReportDto: CreateReportDto,
+  ) {
+    return this.reportService.create(createReportDto, statistics);
   }
 }
