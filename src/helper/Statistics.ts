@@ -1,8 +1,8 @@
 import { mmt, Moment } from '@/moment';
 
 export const getWeelyDateRangeParams = (params: {
-  startDate: Date;
-  endDate: Date;
+  startDate: Date | string;
+  endDate: Date | string;
 }): DateRange[] => {
   const { startDate, endDate } = params;
   const startDateStrMmt: Moment = mmt(startDate);

@@ -1,4 +1,22 @@
-import { Controller, Param, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Request,
+  Response,
+  Get,
+  Post,
+  Body,
+  Query,
+  UseInterceptors,
+  UploadedFiles,
+} from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { rmdirSync } from 'fs';
+import delay from 'delay';
+
+import {
+  getWeelyDateRangeParams,
+  getByDaykDateListParams,
+} from '@/helper/Statistics';
 
 import { ReportService } from './report.service';
 import { CreateReportDto } from './dto/create-report.dto';
@@ -7,11 +25,55 @@ import { CreateReportDto } from './dto/create-report.dto';
 export class ReportController {
   constructor(private readonly reportService: ReportService) {}
 
-  @Post('/:statistics')
-  create(
-    @Param('statistics') statistics,
-    @Body() createReportDto: CreateReportDto,
+  @Post('/upload/tempImages')
+  @UseInterceptors(FilesInterceptor('images'))
+  async uploadTempImages(@UploadedFiles() images) {
+    return this.reportService.uploadImages(images);
+  }
+
+  @Get()
+  async getReport(
+    @Query()
+    query: {
+      startDate: Date | string;
+      endDate: Date | string;
+      statistics: 'byDay' | 'weekly';
+      shopIds: string[];
+      path: string;
+    },
+    @Response() res,
   ) {
-    return this.reportService.create(createReportDto, statistics);
+    const { startDate, endDate, statistics, shopIds = [], path } = query;
+    const idDev = process.env.NODE_ENV === 'development';
+
+    if (statistics === 'weekly') {
+      const weeks = getWeelyDateRangeParams({
+        startDate,
+        endDate,
+      });
+
+      return this.reportService.createWeeklyReport({
+        weeks,
+        ids: shopIds.map((id) => +id),
+        path,
+      });
+    } else if (statistics === 'byDay') {
+      const dateList = getByDaykDateListParams({
+        startDate,
+        endDate,
+      });
+
+      const xlsxPath = await this.reportService.createDayByReport({
+        ids: shopIds.map((id) => +id),
+        dateList,
+        path,
+      });
+
+      if (!idDev) {
+        res.download(xlsxPath, undefined, () => {
+          rmdirSync(`temp/${path}`, { recursive: true });
+        });
+      }
+    }
   }
 }

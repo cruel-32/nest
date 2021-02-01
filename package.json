@@ -27,7 +27,7 @@
     "@nestjs/jwt": "^7.2.0",
     "@nestjs/mapped-types": "^0.1.1",
     "@nestjs/passport": "^7.1.5",
-    "@nestjs/platform-express": "^7.5.1",
+    "@nestjs/platform-express": "^7.6.5",
     "@nestjs/platform-socket.io": "^7.5.5",
     "@nestjs/schedule": "^0.4.1",
     "@nestjs/serve-static": "^2.1.4",
@@ -39,6 +39,7 @@
     "class-validator": "^0.12.2",
     "delay": "^4.4.0",
     "dotenv": "^8.2.0",
+    "excel4node": "^1.7.2",
     "express-rate-limit": "^5.2.3",
     "helmet": "^4.2.0",
     "moment-timezone": "^0.5.32",
@@ -53,7 +54,8 @@
     "rimraf": "^3.0.2",
     "rxjs": "^6.6.3",
     "socket.io": "^3.0.3",
-    "typeorm": "^0.2.29"
+    "typeorm": "^0.2.29",
+    "xlsx": "^0.16.9"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.5.1",

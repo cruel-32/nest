@@ -1,13 +1,14 @@
 @endpoint=http://127.0.0.1:8080
 
 ### report 생성
-POST {{endpoint}}/api/report/byDay HTTP/1.1
+POST {{endpoint}}/api/report HTTP/1.1
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQGFkbWluLmNvbSIsInN1YiI6MSwibmFtZSI6IkFETUlOIiwiaWF0IjoxNjExMTk4MDM4LCJleHAiOjE2MTE4MDI4Mzh9.BFihUnQEQeazY-pwAXzafYOI6adNodDEe1oREdLFOWY
 Content-Type: application/json
 
 {
     "startDate" : "2020-12-06",
     "endDate" : "2020-12-12",
+    "statistics": "byDay",
     "shopIds" : [
         200,201
     ]

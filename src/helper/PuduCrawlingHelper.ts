@@ -4,6 +4,8 @@ export class CrawlingHelper {
   puduLoginParam = {
     account: process.env.PUDU_ID,
     password: process.env.PUDU_PW,
+    appid: '9686827',
+    redirect_url: 'https://cs.pudutech.com/login_success',
   };
   puduGetShopsParam = {
     field: [

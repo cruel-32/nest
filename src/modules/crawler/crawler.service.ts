@@ -4,6 +4,8 @@ import { Connection } from 'typeorm';
 import { AxiosResponse } from 'axios';
 import { catchError, retry, mergeMap } from 'rxjs/operators';
 import { throwError, of } from 'rxjs';
+import { InjectContext } from 'nest-puppeteer';
+import type { BrowserContext } from 'puppeteer';
 
 import { mmt, Moment } from '@/moment';
 import { newArray } from '@/helper/Common';
@@ -39,11 +41,13 @@ export class CrawlerService {
     private readonly httpService: HttpService,
     private readonly connection: Connection,
     private readonly messageGateway: MessageGateway,
+    @InjectContext() private readonly browserContext: BrowserContext,
   ) {}
   private readonly logger = new Logger(CrawlerService.name);
   private readonly helper = new CrawlingHelper();
 
   puduToken: string = null;
+  puduCookie = '';
   keenonToken: string = null;
   unixTime = 0;
 
@@ -197,33 +201,65 @@ export class CrawlerService {
   }
 
   async loginPudu() {
-    const { data, status } = await this.httpService
-      .post<PuduLoginResult>(
-        'https://cs.pudutech.com/api/login',
-        this.helper.puduLoginParam,
-      )
-      .pipe(
-        mergeMap((res) => {
-          this.logger.debug(`:::: Login Result ::::`);
-          console.log(res.status);
-          if (res.status >= 400) {
-            return throwError(`${res.status} returned from http call`);
-          }
-          return of(res);
-        }),
-        retry(10),
-        catchError((err) => {
-          return of(err);
-        }),
-      )
-      .toPromise();
-    // .catch(() => {});
+    const { account, password } = this.helper.puduLoginParam;
+    const page = await this.browserContext.newPage();
+    await page.setViewport({ width: 1920, height: 1080 });
+    console.log('start');
+    await page.goto(
+      'https://oauth2.pudutech.com/login?redirect_url=https%3A%2F%2Fcs.pudutech.com%2Flogin_success&appid=9686827',
+    );
+    await page.waitForSelector('.el-form input[type=text]');
+    //form input 값이 아닌 vue안에 상태값으로 로그인을 하기 때문에
+    //input 값을 바꿔주고 로그인 버튼을 눌러봤자 소용없음... 직접 키보드 이벤트를 발생시켜서
+    //vue 이벤트를 타고 vue 상태값을 변현하게끔 구현해야함...
+    const idForm = await page.$('.el-form input[type=text]');
+    const psForm = await page.$('.el-form input[type=password]');
 
-    if (status === 200) {
-      const { data: tokenData } = data;
-      this.puduToken = tokenData?.token;
-    }
+    await idForm.focus();
+    await page.keyboard.type(account);
+    await psForm.focus();
+    await page.keyboard.type(password);
+    await page.keyboard.press('Enter');
+    await page.waitForSelector('.welcome');
+    const cookies = await page.cookies();
+    this.puduToken = cookies.find((item) => item?.name === 'loginToken')?.value;
+    this.puduCookie = cookies.reduce<string>((cookie, item) => {
+      cookie += `${item.name}=${item.value}; `;
+      return cookie;
+    }, '');
+
+    page.close();
+    return;
   }
+
+  // async loginPudu() {
+  //   const { data, status } = await this.httpService
+  //     .post<PuduLoginResult>(
+  //       'https://cs.pudutech.com/api/login',
+  //       this.helper.puduLoginParam,
+  //     )
+  //     .pipe(
+  //       mergeMap((res) => {
+  //         this.logger.debug(`:::: Login Result ::::`);
+  //         console.log(res.status);
+  //         if (res.status >= 400) {
+  //           return throwError(`${res.status} returned from http call`);
+  //         }
+  //         return of(res);
+  //       }),
+  //       retry(10),
+  //       catchError((err) => {
+  //         return of(err);
+  //       }),
+  //     )
+  //     .toPromise();
+  //   // .catch(() => {});
+
+  //   if (status === 200) {
+  //     const { data: tokenData } = data;
+  //     this.puduToken = tokenData?.token;
+  //   }
+  // }
 
   async getPuduShopsAllPage(): Promise<CreateShopDto[]> {
     const { data } = await this.getPuduShops();
@@ -242,7 +278,7 @@ export class CrawlerService {
     offset = 0,
   ): Promise<AxiosResponse<PuduGetListResults<CreateShopDto>>> {
     const param = { ...this.helper.puduGetShopsParam, offset };
-    // console.log('param ::::: ', param);
+    console.log('this.puduCookie ::::: ', this.puduCookie);
 
     return await this.httpService
       .post<PuduGetListResults<CreateShopDto>>(
@@ -252,6 +288,7 @@ export class CrawlerService {
           headers: {
             authorization: this.puduToken,
             'Content-Type': 'application/json;charset=UTF-8',
+            Cookie: this.puduCookie,
           },
         },
       )
@@ -300,6 +337,7 @@ export class CrawlerService {
           headers: {
             authorization: this.puduToken,
             'Content-Type': 'application/json;charset=UTF-8',
+            Cookie: this.puduCookie,
           },
         },
       )
@@ -411,6 +449,7 @@ export class CrawlerService {
           headers: {
             authorization: this.puduToken,
             'Content-Type': 'application/json;charset=UTF-8',
+            Cookie: this.puduCookie,
           },
         },
       )
@@ -454,6 +493,7 @@ export class CrawlerService {
           headers: {
             authorization: this.puduToken,
             'Content-Type': 'application/json;charset=UTF-8',
+            Cookie: this.puduCookie,
           },
         },
       )

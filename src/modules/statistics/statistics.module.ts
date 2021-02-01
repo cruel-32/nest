@@ -11,5 +11,6 @@ import { ShopModule } from '../pudu/shop/shop.module';
   imports: [TypeOrmModule.forFeature([Statistic]), ShopModule],
   controllers: [StatisticsController],
   providers: [StatisticsService],
+  exports: [StatisticsService],
 })
 export class StatisticsModule {}
