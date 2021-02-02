@@ -23,8 +23,9 @@ type PuduLoginResult = {
   code?: number;
   msg?: string;
   data?: {
-    account: string;
-    token: string;
+    // account: string;
+    // token: string;
+    url: string;
   };
 };
 
@@ -65,7 +66,10 @@ export class CrawlerService {
     let transactionStartingTime = mmt();
     try {
       this.unixTime = this.helper.psTimestamp(YYYY_MM_DD);
-      await this.loginPudu();
+      const loginSuccess = await this.loginPudu();
+
+      if (!loginSuccess) throw { message: '로그인 실패' };
+
       const shops = await this.getPuduShopsAllPage();
       const robots = await this.getPuduRobotsAllPage();
       const deliveries = await this.getPuduDeliveriesAllPageByRobotIds(
@@ -147,11 +151,6 @@ export class CrawlerService {
         const DeliveryLogRepository = manager.getRepository(
           'pudu_delivery_log',
         );
-        const DeliveryDetailRepository = manager.getRepository(
-          'pudu_delivery_detail',
-        );
-        const StatisticsRepository = manager.getRepository('statistics');
-
         // //database 입력
         await Promise.all(shops.map((shop) => ShopRepository.save(shop)));
         await Promise.all(robots.map((robot) => RobotRepository.save(robot)));
@@ -159,16 +158,31 @@ export class CrawlerService {
           deliveries.map((delivery) => DeliveryRepository.save(delivery)),
         );
         await Promise.all(logs.map((log) => DeliveryLogRepository.save(log)));
+      });
+      const testMmt1 = mmt();
+      await this.connection.transaction(async (manager) => {
+        const StatisticsRepository = manager.getRepository('statistics');
+        const DeliveryDetailRepository = manager.getRepository(
+          'pudu_delivery_detail',
+        );
+
         await Promise.all(
           details.map((detail) => DeliveryDetailRepository.insert(detail)),
         );
-
         await StatisticsRepository.save(createStatisticDto);
       });
+      const testMmt2 = mmt();
+
+      console.log(
+        'test 111111 : ',
+        testMmt1.diff(transactionStartingTime, 'seconds'),
+      );
+      console.log(
+        'test 222222 : ',
+        testMmt2.diff(transactionStartingTime, 'seconds'),
+      );
 
       const endTime: Moment = mmt();
-      endTime.diff(this.messageGateway.taskingTime, 'seconds');
-
       this.eventEmitter.emit('tasks.update', YYYY_MM_DD, {
         progress: 'completed',
         message: '크롤링 성공',
@@ -181,8 +195,6 @@ export class CrawlerService {
     } catch (error) {
       console.log('error:::::', error);
       const endTime = mmt();
-      endTime.diff(this.messageGateway.taskingTime, 'seconds');
-
       this.eventEmitter.emit('tasks.update', YYYY_MM_DD, {
         progress: 'failed',
         message: error.message,
@@ -200,66 +212,86 @@ export class CrawlerService {
     }
   }
 
-  async loginPudu() {
-    const { account, password } = this.helper.puduLoginParam;
-    const page = await this.browserContext.newPage();
-    await page.setViewport({ width: 1920, height: 1080 });
-    console.log('start');
-    await page.goto(
-      'https://oauth2.pudutech.com/login?redirect_url=https%3A%2F%2Fcs.pudutech.com%2Flogin_success&appid=9686827',
-    );
-    await page.waitForSelector('.el-form input[type=text]');
-    //form input 값이 아닌 vue안에 상태값으로 로그인을 하기 때문에
-    //input 값을 바꿔주고 로그인 버튼을 눌러봤자 소용없음... 직접 키보드 이벤트를 발생시켜서
-    //vue 이벤트를 타고 vue 상태값을 변현하게끔 구현해야함...
-    const idForm = await page.$('.el-form input[type=text]');
-    const psForm = await page.$('.el-form input[type=password]');
+  // async loginPudu() {//puppeteer 버전
+  //   const { account, password } = this.helper.puduLoginParam;
+  //   const page = await this.browserContext.newPage();
+  //   await page.setViewport({ width: 1920, height: 1080 });
+  //   console.log('start');
+  //   await page.goto(
+  //     'https://oauth2.pudutech.com/login?redirect_url=https%3A%2F%2Fcs.pudutech.com%2Flogin_success&appid=9686827',
+  //   );
+  //   await page.waitForSelector('.el-form input[type=text]');
+  //   //form input 값이 아닌 vue안에 상태값으로 로그인을 하기 때문에
+  //   //input 값을 바꿔주고 로그인 버튼을 눌러봤자 소용없음... 직접 키보드 이벤트를 발생시켜서
+  //   //vue 이벤트를 타고 vue 상태값을 변현하게끔 구현해야함...
+  //   const idForm = await page.$('.el-form input[type=text]');
+  //   const psForm = await page.$('.el-form input[type=password]');
 
-    await idForm.focus();
-    await page.keyboard.type(account);
-    await psForm.focus();
-    await page.keyboard.type(password);
-    await page.keyboard.press('Enter');
-    await page.waitForSelector('.welcome');
-    const cookies = await page.cookies();
-    this.puduToken = cookies.find((item) => item?.name === 'loginToken')?.value;
-    this.puduCookie = cookies.reduce<string>((cookie, item) => {
-      cookie += `${item.name}=${item.value}; `;
-      return cookie;
-    }, '');
+  //   await idForm.focus();
+  //   await page.keyboard.type(account);
+  //   await psForm.focus();
+  //   await page.keyboard.type(password);
+  //   await page.keyboard.press('Enter');
+  //   await page.waitForSelector('.welcome');
+  //   const cookies = await page.cookies();
+  //   this.puduToken = cookies.find((item) => item?.name === 'loginToken')?.value;
+  //   this.puduCookie = cookies.reduce<string>((cookie, item) => {
+  //     cookie += `${item.name}=${item.value}; `;
+  //     return cookie;
+  //   }, '');
 
-    page.close();
-    return;
-  }
-
-  // async loginPudu() {
-  //   const { data, status } = await this.httpService
-  //     .post<PuduLoginResult>(
-  //       'https://cs.pudutech.com/api/login',
-  //       this.helper.puduLoginParam,
-  //     )
-  //     .pipe(
-  //       mergeMap((res) => {
-  //         this.logger.debug(`:::: Login Result ::::`);
-  //         console.log(res.status);
-  //         if (res.status >= 400) {
-  //           return throwError(`${res.status} returned from http call`);
-  //         }
-  //         return of(res);
-  //       }),
-  //       retry(10),
-  //       catchError((err) => {
-  //         return of(err);
-  //       }),
-  //     )
-  //     .toPromise();
-  //   // .catch(() => {});
-
-  //   if (status === 200) {
-  //     const { data: tokenData } = data;
-  //     this.puduToken = tokenData?.token;
-  //   }
+  //   page.close();
+  //   return;
   // }
+
+  async loginPudu(): Promise<boolean> {
+    const {
+      data: { data },
+    } = await this.httpService
+      .post<PuduLoginResult>(
+        'https://oauth2.pudutech.com/api/login/account',
+        this.helper.puduLoginParam,
+      )
+      .pipe(
+        mergeMap((res) => {
+          this.logger.debug(`:::: Login Result ::::`);
+          console.log(res.status);
+          if (res.status >= 400) {
+            return throwError(`${res.status} returned from http call`);
+          }
+          return of(res);
+        }),
+        retry(10),
+        catchError((err) => {
+          return of(err);
+        }),
+      )
+      .toPromise();
+    // .catch(() => {});
+
+    const { url } = data;
+    if (url) {
+      const ticket = url.split('ticket=')[1];
+
+      const loginSuccessPage = await this.httpService
+        .get('https://cs.pudutech.com/api/login', {
+          params: {
+            ticket,
+          },
+        })
+        .toPromise();
+      const { headers, data } = loginSuccessPage;
+      this.puduToken = data.data.token;
+      this.puduCookie = headers['set-cookie'];
+
+      return true;
+    }
+    // if (status === 200) {
+    //   const { data: tokenData } = data;
+    //   this.puduToken = tokenData?.token;
+    // }
+    return false;
+  }
 
   async getPuduShopsAllPage(): Promise<CreateShopDto[]> {
     const { data } = await this.getPuduShops();
