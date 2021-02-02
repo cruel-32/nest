@@ -1,5 +1,4 @@
 import { Module, HttpModule } from '@nestjs/common';
-import { PuppeteerModule } from 'nest-puppeteer';
 
 import { MessageModule } from '@/modules/message/message.module';
 import { CrawlerService } from './crawler.service';
@@ -11,7 +10,6 @@ import { CrawlerService } from './crawler.service';
       maxRedirects: 5,
     }),
     MessageModule,
-    PuppeteerModule.forRoot(),
   ],
   providers: [CrawlerService],
   exports: [CrawlerService],

@@ -4,8 +4,6 @@ import { Connection } from 'typeorm';
 import { AxiosResponse } from 'axios';
 import { catchError, retry, mergeMap } from 'rxjs/operators';
 import { throwError, of } from 'rxjs';
-import { InjectContext } from 'nest-puppeteer';
-import type { BrowserContext } from 'puppeteer';
 
 import { mmt, Moment } from '@/moment';
 import { newArray } from '@/helper/Common';
@@ -42,7 +40,6 @@ export class CrawlerService {
     private readonly httpService: HttpService,
     private readonly connection: Connection,
     private readonly messageGateway: MessageGateway,
-    @InjectContext() private readonly browserContext: BrowserContext,
   ) {}
   private readonly logger = new Logger(CrawlerService.name);
   private readonly helper = new CrawlingHelper();
