@@ -69,7 +69,7 @@ export class ReportController {
       });
 
       res.download(xlsxPath, undefined, () => {
-        rmdirSync(`temp/${path}`, { recursive: true });
+        rmdirSync(`${__dirname}/temp/${path}`, { recursive: true });
       });
     }
   }

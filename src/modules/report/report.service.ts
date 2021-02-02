@@ -11,10 +11,13 @@ export class ReportService {
 
   async uploadImages(images: any[]) {
     const date = mmt().format('YYYYMMDD_HHmmss');
-    mkdirSync(`temp/${date}`, { recursive: true });
+    mkdirSync(`${__dirname}/temp/${date}`, { recursive: true });
 
     for (let i = 0, len = images.length; i < len; i += 1) {
-      await writeFileSync(`temp/${date}/${i}.png`, images[i].buffer);
+      await writeFileSync(
+        `${__dirname}/temp/${date}/${i}.png`,
+        images[i].buffer,
+      );
     }
     return date;
   }
@@ -74,7 +77,7 @@ export class ReportService {
     });
 
     ws.addImage({
-      path: `temp/${path}/0.png`,
+      path: `${__dirname}/temp/${path}/0.png`,
       type: 'picture',
       position: {
         type: 'absoluteAnchor',
@@ -121,7 +124,7 @@ export class ReportService {
     //   .style(style)
     //   .style({ font: { size: 14 } });
 
-    const xlsxPath = `temp/${path}/${dateList[0]}~${
+    const xlsxPath = `${__dirname}/temp/${path}/${dateList[0]}~${
       dateList[dateList.length - 1]
     }-DayBy.xlsx`;
     const prms = new Promise((res, rej) => {
