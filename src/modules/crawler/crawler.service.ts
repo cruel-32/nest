@@ -243,30 +243,17 @@ export class CrawlerService {
 
   async loginPudu(): Promise<boolean> {
     const {
-      data: { data },
+      data: {
+        data: { url },
+      },
     } = await this.httpService
       .post<PuduLoginResult>(
         'https://oauth2.pudutech.com/api/login/account',
         this.helper.puduLoginParam,
       )
-      .pipe(
-        mergeMap((res) => {
-          this.logger.debug(`:::: Login Result ::::`);
-          console.log(res.status);
-          if (res.status >= 400) {
-            return throwError(`${res.status} returned from http call`);
-          }
-          return of(res);
-        }),
-        retry(10),
-        catchError((err) => {
-          return of(err);
-        }),
-      )
       .toPromise();
     // .catch(() => {});
 
-    const { url } = data;
     if (url) {
       const ticket = url.split('ticket=')[1];
 
@@ -283,10 +270,6 @@ export class CrawlerService {
 
       return true;
     }
-    // if (status === 200) {
-    //   const { data: tokenData } = data;
-    //   this.puduToken = tokenData?.token;
-    // }
     return false;
   }
 
