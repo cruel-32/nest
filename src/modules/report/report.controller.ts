@@ -44,7 +44,6 @@ export class ReportController {
     @Response() res,
   ) {
     const { startDate, endDate, statistics, shopIds = [], path } = query;
-    const idDev = process.env.NODE_ENV === 'development';
 
     if (statistics === 'weekly') {
       const weeks = getWeelyDateRangeParams({
@@ -69,11 +68,9 @@ export class ReportController {
         path,
       });
 
-      if (!idDev) {
-        res.download(xlsxPath, undefined, () => {
-          rmdirSync(`temp/${path}`, { recursive: true });
-        });
-      }
+      res.download(xlsxPath, undefined, () => {
+        rmdirSync(`temp/${path}`, { recursive: true });
+      });
     }
   }
 }

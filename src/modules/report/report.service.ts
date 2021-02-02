@@ -10,17 +10,11 @@ export class ReportService {
   constructor(private readonly statisticsService: StatisticsService) {}
 
   async uploadImages(images: any[]) {
-    console.log('images : ', images);
-    const idDev = process.env.NODE_ENV === 'development';
     const date = mmt().format('YYYYMMDD_HHmmss');
+    mkdirSync(`temp/${date}`, { recursive: true });
 
-    if (!idDev) {
-      mkdirSync(`temp/${date}`, { recursive: true });
-
-      for (let i = 0, len = images.length; i < len; i += 1) {
-        await writeFileSync(`temp/${date}/${i}.png`, images[i].buffer);
-      }
-      console.log('created');
+    for (let i = 0, len = images.length; i < len; i += 1) {
+      await writeFileSync(`temp/${date}/${i}.png`, images[i].buffer);
     }
     return date;
   }
@@ -41,7 +35,6 @@ export class ReportService {
     path: string;
   }) {
     console.log('process.env.NODE_ENV : ', process.env.NODE_ENV);
-    const idDev = process.env.NODE_ENV === 'development';
     const { ids, dateList, path } = params;
     const statisticsData = await this.statisticsService.getByDay({
       ids,
@@ -80,17 +73,15 @@ export class ReportService {
       },
     });
 
-    if (!idDev) {
-      ws.addImage({
-        path: `temp/${path}/0.png`,
-        type: 'picture',
-        position: {
-          type: 'absoluteAnchor',
-          x: '1in',
-          y: '2in',
-        },
-      });
-    }
+    ws.addImage({
+      path: `temp/${path}/0.png`,
+      type: 'picture',
+      position: {
+        type: 'absoluteAnchor',
+        x: '1in',
+        y: '2in',
+      },
+    });
 
     for (let i = 1, len = 7; i <= len; i += 1) {
       ws.cell(1, 1 + i)
@@ -130,24 +121,20 @@ export class ReportService {
     //   .style(style)
     //   .style({ font: { size: 14 } });
 
-    if (idDev) {
-      wb.write('test.xlsx');
-    } else {
-      const xlsxPath = `temp/${path}/${dateList[0]}~${
-        dateList[dateList.length - 1]
-      }-DayBy.xlsx`;
-      const prms = new Promise((res, rej) => {
-        wb.write(xlsxPath, (err) => {
-          if (err) {
-            console.error(err);
-            rej(err);
-          } else {
-            res(xlsxPath);
-          }
-        });
+    const xlsxPath = `temp/${path}/${dateList[0]}~${
+      dateList[dateList.length - 1]
+    }-DayBy.xlsx`;
+    const prms = new Promise((res, rej) => {
+      wb.write(xlsxPath, (err) => {
+        if (err) {
+          console.error(err);
+          rej(err);
+        } else {
+          res(xlsxPath);
+        }
       });
+    });
 
-      return prms;
-    }
+    return prms;
   }
 }
