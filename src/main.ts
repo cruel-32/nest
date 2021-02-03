@@ -6,6 +6,8 @@ import * as helmet from 'helmet';
 import * as rateLimit from 'express-rate-limit';
 import { join } from 'path';
 
+import { ErrorHandleFilter } from '@/filter/error-handle.filter';
+
 config({
   path: join(
     __dirname,
@@ -17,6 +19,9 @@ config({
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, { cors: true });
   const port = process.env.PORT || 3333;
+
+  app.useGlobalFilters(new ErrorHandleFilter());
+
   app.use(
     helmet({
       contentSecurityPolicy: false,

@@ -1,6 +1,6 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_FILTER } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { EventEmitterModule } from '@nestjs/event-emitter';
@@ -9,6 +9,7 @@ import { join } from 'path';
 import { TypeOrmConfig } from './config';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { LoggerMiddleware } from './middleware/logger.middleware';
+import { ErrorHandleFilter } from '@/filter/error-handle.filter';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -47,6 +48,10 @@ import { ReportModule } from './modules/report/report.module';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: ErrorHandleFilter,
     },
   ],
 })
