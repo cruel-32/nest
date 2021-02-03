@@ -10,6 +10,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { rmdirSync } from 'fs';
 import delay from 'delay';
+import { join } from 'path';
 
 import {
   getWeelyDateRangeParams,
@@ -66,7 +67,9 @@ export class ReportController {
       });
 
       res.download(xlsxPath, undefined, () => {
-        rmdirSync(`${__dirname}/temp/${path}`, { recursive: true });
+        rmdirSync(`${join(__dirname, '../../../')}temp/${path}`, {
+          recursive: true,
+        });
       });
     }
   }

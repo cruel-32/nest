@@ -12,17 +12,15 @@ export class ReportService {
 
   async uploadImages(images: any[]) {
     const date = mmt().format('YYYYMMDD_HHmmss');
-    console.log(`${join(__dirname, '../../../')}temp/${date}`);
+    const imagePath = `${join(__dirname, '../../../')}temp/${date}`;
+    console.log('imagePath :::: ', imagePath);
 
-    mkdirSync(`${join(__dirname, '../../../')}temp/${date}`, {
+    mkdirSync(`${imagePath}`, {
       recursive: true,
     });
 
     for (let i = 0, len = images.length; i < len; i += 1) {
-      await writeFileSync(
-        `${join(__dirname, '../../../')}temp/${date}/${i}.png`,
-        images[i].buffer,
-      );
+      await writeFileSync(`${imagePath}/${i}.png`, images[i].buffer);
     }
     return date;
   }
@@ -44,6 +42,7 @@ export class ReportService {
   }) {
     console.log('process.env.NODE_ENV : ', process.env.NODE_ENV);
     const { ids, dateList, path } = params;
+    const tempPath = `${join(__dirname, '../../../')}temp/${path}`;
     const statisticsData = await this.statisticsService.getByDay({
       ids,
       dateList,
@@ -82,7 +81,7 @@ export class ReportService {
     });
 
     ws.addImage({
-      path: `${join(__dirname, '../../../')}temp/${path}/0.png`,
+      path: `${tempPath}/0.png`,
       type: 'picture',
       position: {
         type: 'absoluteAnchor',
@@ -129,9 +128,9 @@ export class ReportService {
     //   .style(style)
     //   .style({ font: { size: 14 } });
 
-    const xlsxPath = `${join(__dirname, '../../../')}temp/${path}/${
-      dateList[0]
-    }~${dateList[dateList.length - 1]}-DayBy.xlsx`;
+    const xlsxPath = `${tempPath}/${dateList[0]}~${
+      dateList[dateList.length - 1]
+    }-DayBy.xlsx`;
     const prms = new Promise((res, rej) => {
       wb.write(xlsxPath, (err) => {
         if (err) {
