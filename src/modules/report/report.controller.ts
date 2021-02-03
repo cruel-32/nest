@@ -1,10 +1,8 @@
 import {
   Controller,
-  Request,
   Response,
   Get,
   Post,
-  Body,
   Query,
   UseInterceptors,
   UploadedFiles,
@@ -19,7 +17,6 @@ import {
 } from '@/helper/Statistics';
 
 import { ReportService } from './report.service';
-import { CreateReportDto } from './dto/create-report.dto';
 
 @Controller('report')
 export class ReportController {
