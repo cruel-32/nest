@@ -33,44 +33,60 @@ export class ReportController {
   async getReport(
     @Query()
     query: {
-      startDate: Date | string;
-      endDate: Date | string;
-      statistics: 'byDay' | 'weekly';
+      startDate: string;
+      endDate: string;
       shopIds: string[];
-      path: string;
     },
     @Response() res,
   ) {
-    const { startDate, endDate, statistics, shopIds = [], path } = query;
-
-    if (statistics === 'weekly') {
-      const weeks = getWeelyDateRangeParams({
-        startDate,
-        endDate,
-      });
-
-      return this.reportService.createWeeklyReport({
-        weeks,
-        ids: shopIds.map((id) => +id),
-        path,
-      });
-    } else if (statistics === 'byDay') {
-      const dateList = getByDaykDateListParams({
-        startDate,
-        endDate,
-      });
-
-      const xlsxPath = await this.reportService.createDayByReport({
-        ids: shopIds.map((id) => +id),
-        dateList,
-        path,
-      });
-
-      res.download(xlsxPath, undefined, () => {
-        rmdirSync(`${join(__dirname, '../../../')}temp/${path}`, {
-          recursive: true,
-        });
-      });
-    }
+    const { startDate, endDate, shopIds = [] } = query;
+    const xlsxPath = await this.reportService.getReport({
+      ids: shopIds.map((id) => +id),
+      dateList: getByDaykDateListParams({ startDate, endDate }),
+    });
   }
+  // @Get()
+  // async getReport(
+  //   @Query()
+  //   query: {
+  //     startDate: Date | string;
+  //     endDate: Date | string;
+  //     statistics: 'byDay' | 'weekly';
+  //     shopIds: string[];
+  //     path: string;
+  //   },
+  //   @Response() res,
+  // ) {
+  //   const { startDate, endDate, statistics, shopIds = [], path } = query;
+
+  //   if (statistics === 'weekly') {
+  //     const weeks = getWeelyDateRangeParams({
+  //       startDate,
+  //       endDate,
+  //     });
+
+  //     return this.reportService.createWeeklyReport({
+  //       weeks,
+  //       ids: shopIds.map((id) => +id),
+  //       path,
+  //     });
+  //   } else if (statistics === 'byDay') {
+  //     const dateList = getByDaykDateListParams({
+  //       startDate,
+  //       endDate,
+  //     });
+
+  //     const xlsxPath = await this.reportService.createDayByReport({
+  //       ids: shopIds.map((id) => +id),
+  //       dateList,
+  //       path,
+  //     });
+
+  //     res.download(xlsxPath, undefined, () => {
+  //       rmdirSync(`${join(__dirname, '../../../')}temp/${path}`, {
+  //         recursive: true,
+  //       });
+  //     });
+  //   }
+  // }
 }

@@ -40,11 +40,14 @@
     "delay": "^4.4.0",
     "dotenv": "^8.2.0",
     "excel4node": "^1.7.2",
+    "exceljs": "^4.2.0",
     "express-rate-limit": "^5.2.3",
+    "googleapis": "^39.2.0",
     "helmet": "^4.2.0",
     "moment-timezone": "^0.5.32",
     "mysql": "^2.18.1",
     "nestjs-typeorm-paginate": "^2.2.6",
+    "node-xlsx": "^0.16.1",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
@@ -53,7 +56,8 @@
     "rxjs": "^6.6.3",
     "socket.io": "^3.0.3",
     "typeorm": "^0.2.29",
-    "xlsx": "^0.16.9"
+    "xlsx": "^0.16.9",
+    "xlsx-chart": "^0.4.2"
   },
   "devDependencies": {
     "@nestjs/cli": "^7.5.1",

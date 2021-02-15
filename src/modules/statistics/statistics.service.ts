@@ -23,6 +23,16 @@ export type Statistics = {
   }[];
 };
 
+export type RawStatistics = {
+  date: string;
+  puduMileages: {
+    [key: number]: number;
+  };
+  puduCounts: {
+    [key: number]: number;
+  };
+};
+
 @Injectable()
 export class StatisticsService {
   constructor(
@@ -333,6 +343,45 @@ export class StatisticsService {
     );
 
     return results;
+  }
+
+  async getRawData(params: {
+    ids: number[];
+    startDate: string;
+    endDate: string;
+  }): Promise<{
+    statisticData: RawStatistics[];
+    shopNames: {
+      [key: number]: string;
+    };
+  }> {
+    const { ids, startDate, endDate } = params;
+    const shops = await this.shopService.findAllByIds(ids);
+    const shopNames = shops.reduce((names, shop) => {
+      const { Shop_id, Shop_name } = shop;
+
+      names[Shop_id] = Shop_name;
+      return names;
+    }, {});
+
+    const rawQuery = `
+      SELECT * FROM statistics WHERE DATE_FORMAT(id, '%Y-%m-%d') BETWEEN '${startDate}' AND '${endDate}';
+    `;
+    const statistics = await this.deliveryRepository.query(rawQuery);
+
+    const statisticData: RawStatistics[] = statistics.map((statistic) => {
+      const { id, puduMileages, puduCounts } = statistic;
+
+      return {
+        date: id,
+        puduMileages: JSON.parse(puduMileages),
+        puduCounts: JSON.parse(puduCounts),
+      };
+    });
+
+    // console.log('statisticData ::::: ', statisticData);
+
+    return { statisticData, shopNames };
   }
 
   // async getByDay(params: { ids: number[]; dateList: string[] }) {
